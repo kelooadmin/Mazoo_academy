@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Mazoo Academy — 5-sinf matematika</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="topbar" id="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 40 40" fill="none">
+        <path d="M20 3 L35 11 V29 L20 37 L5 29 V11 Z" fill="#0EA5A0"/>
+        <path d="M20 3 L35 11 L20 19 L5 11 Z" fill="#5ED4CD"/>
+        <text x="20" y="26" text-anchor="middle" font-family="Baloo 2" font-weight="700" font-size="14" fill="#0B2338">M</text>
+      </svg>
+      <span>Mazoo</span>
+    </div>
+    <div class="stats" id="statsBar">
+      <div class="stat stat-streak" title="Ketma-ket kunlar">
+        <span class="stat-icon">🔥</span><span id="streakVal">0</span>
+      </div>
+      <div class="stat stat-xp" title="Tajriba ballari">
+        <span class="stat-icon">⭐</span><span id="xpVal">0</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- PATH VIEW -->
+<main id="pathView" class="path-view">
+  <section class="hero">
+    <div class="hero-mascot">
+      <svg viewBox="0 0 120 120" class="mascot-svg">
+        <circle cx="60" cy="66" r="42" fill="#0EA5A0"/>
+        <circle cx="60" cy="66" r="42" fill="url(#tileGrad)" opacity="0.25"/>
+        <circle cx="44" cy="58" r="7" fill="#0B2338"/>
+        <circle cx="76" cy="58" r="7" fill="#0B2338"/>
+        <circle cx="46" cy="56" r="2.4" fill="#fff"/>
+        <circle cx="78" cy="56" r="2.4" fill="#fff"/>
+        <path d="M46 80 Q60 92 74 80" stroke="#0B2338" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M30 40 L20 18 M90 40 L100 18" stroke="#F2B705" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="18" cy="14" r="6" fill="#F2B705"/>
+        <circle cx="102" cy="14" r="6" fill="#F2B705"/>
+        <defs>
+          <linearGradient id="tileGrad" x1="0" y1="0" x2="120" y2="120">
+            <stop offset="0" stop-color="#fff"/>
+            <stop offset="1" stop-color="#0B2338"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <h1>5-sinf matematika yo'li</h1>
+    <p class="hero-sub">Har bir mavzuni bosib o'ting, yulduz to'plang, ketma-ketlikni uzmang.</p>
+  </section>
+
+  <div class="trail" id="trail">
+    <!-- JS orqali to'ldiriladi -->
+  </div>
+</main>
+
+<!-- LESSON MODAL -->
+<div class="modal-backdrop" id="lessonBackdrop">
+  <div class="modal lesson-modal">
+    <button class="modal-close" id="closeLessonModal">✕</button>
+    <div class="lesson-badge" id="lessonBadge">MAVZU</div>
+    <h2 id="lessonTitle">—</h2>
+    <div class="lesson-content" id="lessonContent">—</div>
+    <button class="btn-primary btn-start" id="startQuizBtn">Testni boshlash</button>
+    <div class="lesson-empty" id="lessonEmpty" style="display:none;">Bu mavzuga hali testlar qo'shilmagan.</div>
+  </div>
+</div>
+
+<!-- QUIZ VIEW -->
+<main id="quizView" class="quiz-view" style="display:none;">
+  <div class="quiz-topbar">
+    <button class="quiz-exit" id="quizExitBtn">✕</button>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="hearts" id="heartsDisplay">❤️❤️❤️❤️❤️</div>
+  </div>
+
+  <div class="quiz-body">
+    <div class="q-counter" id="qCounter">Savol 1 / 15</div>
+    <h2 class="q-text" id="qText">Savol matni shu yerda</h2>
+    <div class="q-options" id="qOptions"></div>
+  </div>
+
+  <div class="quiz-footer" id="quizFooter">
+    <button class="btn-primary btn-check" id="checkBtn" disabled>Tekshirish</button>
+  </div>
+</main>
+
+<!-- RESULT VIEW -->
+<main id="resultView" class="result-view" style="display:none;">
+  <div class="result-card">
+    <div class="result-emoji" id="resultEmoji">🎉</div>
+    <h2 id="resultTitle">Ajoyib!</h2>
+    <p id="resultSub">Siz mavzuni yakunladingiz</p>
+    <div class="result-stats">
+      <div class="result-stat"><span id="resultCorrect">0</span><label>to'g'ri</label></div>
+      <div class="result-stat"><span id="resultXp">+0</span><label>XP</label></div>
+    </div>
+    <button class="btn-primary btn-start" id="backToPathBtn">Yo'lga qaytish</button>
+  </div>
+</main>
+
+<!-- HEARTS OVER VIEW -->
+<main id="gameOverView" class="result-view" style="display:none;">
+  <div class="result-card">
+    <div class="result-emoji">💔</div>
+    <h2>Jonlar tugadi</h2>
+    <p>Xavotir olmang, qayta urinib ko'ring!</p>
+    <button class="btn-primary btn-start" id="retryBtn">Qayta boshlash</button>
+    <button class="btn-secondary" id="giveUpBtn">Yo'lga qaytish</button>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
