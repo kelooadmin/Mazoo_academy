@@ -107,34 +107,42 @@ async function loadPath() {
       trailEl.innerHTML = `<p style="text-align:center;color:#E8544C;padding:30px 18px;font-weight:600;">Xatolik: ${topicsErr.message}</p>`;
       return;
     }
-
     if (!topics || topics.length === 0) {
-      trailEl.innerHTML = `<p style="text-align:center;color:#8592A0;padding:30px 18px;">Hozircha mavzular topilmadi (jadval bo'sh yoki grade=5 mos kelmadi).</p>`;
+      trailEl.innerHTML = `<p style="text-align:center;color:#8592A0;padding:30px 18px;">Hozircha mavzular topilmadi.</p>`;
       return;
     }
 
-    const results = [];
-    for (const topic of topics) {
-      const { data: lessons } = await db
-        .from('lessons')
-        .select('*')
-        .eq('topic_id', topic.id)
-        .order('order_index', { ascending: true })
-        .limit(1);
+    const topicIds = topics.map(t => t.id);
 
-      const lesson = lessons && lessons[0] ? lessons[0] : null;
-      let questionCount = 0;
-      if (lesson) {
-        const { count } = await db
-          .from('questions')
-          .select('*', { count: 'exact', head: true })
-          .eq('lesson_id', lesson.id);
-        questionCount = count || 0;
-      }
-      results.push({ topic, lesson, questionCount });
+    const { data: allLessons } = await db
+      .from('lessons')
+      .select('*')
+      .in('topic_id', topicIds)
+      .order('order_index', { ascending: true });
+
+    const lessonByTopic = {};
+    (allLessons || []).forEach(l => {
+      if (!lessonByTopic[l.topic_id]) lessonByTopic[l.topic_id] = l;
+    });
+    const lessonIds = (allLessons || []).map(l => l.id);
+
+    let countByLesson = {};
+    if (lessonIds.length > 0) {
+      const { data: allQuestions } = await db
+        .from('questions')
+        .select('lesson_id')
+        .in('lesson_id', lessonIds);
+      (allQuestions || []).forEach(q => {
+        countByLesson[q.lesson_id] = (countByLesson[q.lesson_id] || 0) + 1;
+      });
     }
 
-    topicsWithLessons = results;
+    topicsWithLessons = topics.map(topic => {
+      const lesson = lessonByTopic[topic.id] || null;
+      const questionCount = lesson ? (countByLesson[lesson.id] || 0) : 0;
+      return { topic, lesson, questionCount };
+    });
+
     renderTrail();
   } catch (err) {
     trailEl.innerHTML = `<p style="text-align:center;color:#E8544C;padding:30px 18px;font-weight:600;">Kutilmagan xato: ${err.message}</p>`;
