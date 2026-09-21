@@ -354,14 +354,13 @@ function renderQuestion() {
 
   const optionsEl = document.getElementById('qOptions');
   optionsEl.innerHTML = '';
+
   let options = q.options;
-  if (typeof options === 'string') {
-    try { options = JSON.parse(options); } catch (e) { 
-      let options = q.options;
   if (typeof options === 'string') {
     try { options = JSON.parse(options); } catch (e) { options = []; }
   }
-      options=shuffleArray(options); // har safar variantlar tartibini aralashtiramiz
+  options = shuffleArray(options); // har safar variantlar tartibini aralashtiramiz
+
   options.forEach((opt) => {
     const b = document.createElement('button');
     b.className = 'q-option';
