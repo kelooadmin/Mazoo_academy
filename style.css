@@ -381,3 +381,51 @@ h1, h2, .brand span, .q-counter-label {
   .hero h1 { font-size: 22px; }
   .node { width: 74px; height: 74px; font-size: 28px; }
 }
+
+/* ---------- AUTH VIEW ---------- */
+.auth-view {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.auth-card {
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+}
+.auth-card h1 { font-size: 24px; color: var(--navy); margin: 10px 0 4px; }
+.auth-input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--cream-dim);
+  background: var(--white);
+  font-size: 16px;
+  font-family: 'Manrope', sans-serif;
+  margin-top: 12px;
+  outline: none;
+}
+.auth-input:focus { border-color: var(--teal); }
+.auth-error {
+  color: #B23328;
+  background: #FCEAE8;
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 12px;
+  text-align: left;
+}
+.auth-view .btn-start { margin-top: 20px; }
+.logout-btn {
+  background: var(--white);
+  border: 2px solid var(--cream-dim);
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  font-size: 15px;
+  cursor: pointer;
+  color: #8592A0;
+}
