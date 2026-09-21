@@ -11,7 +11,7 @@
 <body>
 
 <!-- TOP BAR -->
-<header class="topbar" id="topbar">
+<header class="topbar" id="topbar" style="display:none;">
   <div class="topbar-inner">
     <div class="brand">
       <svg class="brand-mark" viewBox="0 0 40 40" fill="none">
@@ -28,12 +28,42 @@
       <div class="stat stat-xp" title="Tajriba ballari">
         <span class="stat-icon">⭐</span><span id="xpVal">0</span>
       </div>
+      <button class="logout-btn" id="logoutBtn" title="Chiqish">⎋</button>
     </div>
   </div>
 </header>
 
+<!-- AUTH VIEW -->
+<main id="authView" class="auth-view">
+  <div class="auth-card">
+    <div class="hero-mascot">
+      <svg viewBox="0 0 120 120" class="mascot-svg">
+        <circle cx="60" cy="66" r="42" fill="#0EA5A0"/>
+        <circle cx="44" cy="58" r="7" fill="#0B2338"/>
+        <circle cx="76" cy="58" r="7" fill="#0B2338"/>
+        <circle cx="46" cy="56" r="2.4" fill="#fff"/>
+        <circle cx="78" cy="56" r="2.4" fill="#fff"/>
+        <path d="M46 80 Q60 92 74 80" stroke="#0B2338" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M30 40 L20 18 M90 40 L100 18" stroke="#F2B705" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="18" cy="14" r="6" fill="#F2B705"/>
+        <circle cx="102" cy="14" r="6" fill="#F2B705"/>
+      </svg>
+    </div>
+    <h1 id="authTitle">Xush kelibsiz!</h1>
+    <p class="hero-sub" id="authSub">Davom etish uchun ro'yxatdan o'ting</p>
+
+    <input type="email" id="authEmail" class="auth-input" placeholder="Email" autocomplete="email">
+    <input type="password" id="authPassword" class="auth-input" placeholder="Parol (kamida 6 ta belgi)" autocomplete="current-password">
+
+    <div class="auth-error" id="authError" style="display:none;"></div>
+
+    <button class="btn-primary btn-start" id="authSubmitBtn">Ro'yxatdan o'tish</button>
+    <button class="btn-secondary" id="authToggleBtn">Akkountingiz bormi? Kiring</button>
+  </div>
+</main>
+
 <!-- PATH VIEW -->
-<main id="pathView" class="path-view">
+<main id="pathView" class="path-view" style="display:none;">
   <section class="hero">
     <div class="hero-mascot">
       <svg viewBox="0 0 120 120" class="mascot-svg">
