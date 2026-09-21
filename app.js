@@ -361,10 +361,7 @@ function renderQuestion() {
   if (typeof options === 'string') {
     try { options = JSON.parse(options); } catch (e) { options = []; }
   }
-  options = shuffleArray(options); // har safar variantlar tartibini aralashtiramiz
-  
-  
-
+      options=shuffleArray(options); // har safar variantlar tartibini aralashtiramiz
   options.forEach((opt) => {
     const b = document.createElement('button');
     b.className = 'q-option';
