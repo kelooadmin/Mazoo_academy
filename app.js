@@ -1,8 +1,7 @@
 // ============================================================
-// MAZOO ACADEMY — asosiy ilova mantiqi
+// MAZOO ACADEMY — asosiy ilova mantiqi (Auth bilan)
 // ============================================================
 
-// Har qanday xatoni sahifada ko'rsatish (debug uchun)
 window.addEventListener('error', function (e) {
   const trailEl = document.getElementById('trail');
   if (trailEl) {
@@ -11,74 +10,175 @@ window.addEventListener('error', function (e) {
 });
 
 if (typeof supabase === 'undefined') {
-  document.getElementById('trail').innerHTML = '<p style="text-align:center;color:#E8544C;padding:30px 18px;font-weight:600;">XATO: Supabase kutubxonasi yuklanmadi (CDN muammosi)</p>';
+  document.body.innerHTML = '<p style="text-align:center;color:#E8544C;padding:30px 18px;font-weight:600;">XATO: Supabase kutubxonasi yuklanmadi (CDN muammosi)</p>';
   throw new Error('supabase is undefined');
 }
 
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ---------- LOCAL STATE (XP / STREAK) ----------
-const Storage = {
-  get(key, fallback) {
-    try {
-      const v = localStorage.getItem(key);
-      return v === null ? fallback : JSON.parse(v);
-    } catch (e) { return fallback; }
-  },
-  set(key, val) {
-    try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
-  }
-};
+// ---------- AUTH STATE ----------
+let currentUser = null;
+let profile = null;
+let authMode = 'signup'; // yoki 'signin'
 
-function getStreakAndXp() {
-  return {
-    xp: Storage.get('mazoo_xp', 0),
-    streak: Storage.get('mazoo_streak', 0),
-    lastActive: Storage.get('mazoo_last_active', null)
-  };
+async function initAuth() {
+  const { data: { session } } = await db.auth.getSession();
+  if (session && session.user) {
+    await onLoggedIn(session.user);
+  } else {
+    showView('auth');
+  }
 }
 
-function addXp(amount) {
-  const cur = Storage.get('mazoo_xp', 0);
-  Storage.set('mazoo_xp', cur + amount);
+db.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' && session && session.user) {
+    onLoggedIn(session.user);
+  }
+  if (event === 'SIGNED_OUT') {
+    currentUser = null;
+    profile = null;
+    document.getElementById('topbar').style.display = 'none';
+    showView('auth');
+  }
+});
+
+async function onLoggedIn(user) {
+  currentUser = user;
+  await loadOrCreateProfile(user.id);
+  document.getElementById('topbar').style.display = 'block';
+  showView('path');
+  loadPath();
+}
+
+async function loadOrCreateProfile(userId) {
+  let { data, error } = await db.from('profiles').select('*').eq('id', userId).single();
+  if (error || !data) {
+    const { data: created } = await db
+      .from('profiles')
+      .insert({ id: userId, xp: 0, streak: 0, done_lessons: [] })
+      .select()
+      .single();
+    data = created;
+  }
+  profile = data || { xp: 0, streak: 0, last_active: null, done_lessons: [] };
   renderStats();
 }
 
+async function syncProfile(fields) {
+  if (!currentUser) return;
+  await db.from('profiles').update(fields).eq('id', currentUser.id);
+}
+
+function renderStats() {
+  if (!profile) return;
+  document.getElementById('xpVal').textContent = profile.xp || 0;
+  document.getElementById('streakVal').textContent = profile.streak || 0;
+}
+
+function addXp(amount) {
+  if (!profile) return;
+  profile.xp = (profile.xp || 0) + amount;
+  renderStats();
+  syncProfile({ xp: profile.xp });
+}
+
 function registerActivityToday() {
+  if (!profile) return;
   const today = new Date().toISOString().slice(0, 10);
-  const last = Storage.get('mazoo_last_active', null);
-  if (last === today) return;
-  let streak = Storage.get('mazoo_streak', 0);
-  if (last) {
-    const lastDate = new Date(last);
-    const diffDays = Math.round((new Date(today) - lastDate) / 86400000);
+  if (profile.last_active === today) return;
+  let streak = profile.streak || 0;
+  if (profile.last_active) {
+    const diffDays = Math.round((new Date(today) - new Date(profile.last_active)) / 86400000);
     streak = diffDays === 1 ? streak + 1 : 1;
   } else {
     streak = 1;
   }
-  Storage.set('mazoo_streak', streak);
-  Storage.set('mazoo_last_active', today);
+  profile.streak = streak;
+  profile.last_active = today;
   renderStats();
-}
-
-function renderStats() {
-  const { xp, streak } = getStreakAndXp();
-  document.getElementById('xpVal').textContent = xp;
-  document.getElementById('streakVal').textContent = streak;
+  syncProfile({ streak: profile.streak, last_active: profile.last_active });
 }
 
 function markLessonDone(lessonId) {
-  const done = Storage.get('mazoo_done_lessons', []);
+  if (!profile) return;
+  const done = profile.done_lessons || [];
   if (!done.includes(lessonId)) {
     done.push(lessonId);
-    Storage.set('mazoo_done_lessons', done);
+    profile.done_lessons = done;
+    syncProfile({ done_lessons: done });
   }
 }
 
 function isLessonDone(lessonId) {
-  return Storage.get('mazoo_done_lessons', []).includes(lessonId);
+  return profile && profile.done_lessons && profile.done_lessons.includes(lessonId);
 }
+
+// ---------- AUTH FORM ----------
+function updateAuthUI() {
+  const title = document.getElementById('authTitle');
+  const sub = document.getElementById('authSub');
+  const submitBtn = document.getElementById('authSubmitBtn');
+  const toggleBtn = document.getElementById('authToggleBtn');
+  document.getElementById('authError').style.display = 'none';
+
+  if (authMode === 'signup') {
+    title.textContent = "Xush kelibsiz!";
+    sub.textContent = "Davom etish uchun ro'yxatdan o'ting";
+    submitBtn.textContent = "Ro'yxatdan o'tish";
+    toggleBtn.textContent = "Akkountingiz bormi? Kiring";
+  } else {
+    title.textContent = "Qaytganingizdan xursandmiz!";
+    sub.textContent = "Hisobingizga kiring";
+    submitBtn.textContent = "Kirish";
+    toggleBtn.textContent = "Akkountingiz yo'qmi? Ro'yxatdan o'ting";
+  }
+}
+
+document.getElementById('authToggleBtn').addEventListener('click', () => {
+  authMode = authMode === 'signup' ? 'signin' : 'signup';
+  updateAuthUI();
+});
+
+document.getElementById('authSubmitBtn').addEventListener('click', async () => {
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const errEl = document.getElementById('authError');
+  errEl.style.display = 'none';
+
+  if (!email || !password) {
+    errEl.textContent = "Email va parolni to'ldiring";
+    errEl.style.display = 'block';
+    return;
+  }
+  if (password.length < 6) {
+    errEl.textContent = "Parol kamida 6 ta belgidan iborat bo'lishi kerak";
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const submitBtn = document.getElementById('authSubmitBtn');
+  submitBtn.disabled = true;
+
+  let result;
+  if (authMode === 'signup') {
+    result = await db.auth.signUp({ email, password });
+  } else {
+    result = await db.auth.signInWithPassword({ email, password });
+  }
+
+  submitBtn.disabled = false;
+
+  if (result.error) {
+    errEl.textContent = result.error.message;
+    errEl.style.display = 'block';
+  }
+  // Muvaffaqiyatli bo'lsa, onAuthStateChange avtomatik ishga tushadi
+});
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  db.auth.signOut();
+});
 
 // ---------- APP STATE ----------
 let topicsWithLessons = [];
@@ -346,11 +446,11 @@ function finishQuiz() {
 
 // ---------- VIEW SWITCHING ----------
 function showView(name) {
+  document.getElementById('authView').style.display = name === 'auth' ? 'flex' : 'none';
   document.getElementById('pathView').style.display = name === 'path' ? 'block' : 'none';
   document.getElementById('quizView').style.display = name === 'quiz' ? 'flex' : 'none';
   document.getElementById('resultView').style.display = name === 'result' ? 'flex' : 'none';
   document.getElementById('gameOverView').style.display = name === 'gameOver' ? 'flex' : 'none';
-  document.getElementById('topbar').style.display = name === 'path' ? 'block' : 'none';
   window.scrollTo(0, 0);
 }
 
@@ -360,5 +460,5 @@ document.getElementById('giveUpBtn').addEventListener('click', () => showView('p
 document.getElementById('retryBtn').addEventListener('click', () => startQuiz(currentLesson));
 
 // ---------- INIT ----------
-renderStats();
-loadPath();
+updateAuthUI();
+initAuth();
