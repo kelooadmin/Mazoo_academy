@@ -1,169 +1,602 @@
-<!DOCTYPE html>
-<html lang="uz">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Mazoo Academy — 5-sinf matematika</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
+// ============================================================
+// MAZOO ACADEMY — asosiy ilova mantiqi (Auth bilan)
+// ============================================================
 
-<!-- TOP BAR -->
-<header class="topbar" id="topbar" style="display:none;">
-  <div class="topbar-inner">
-    <div class="brand">
-      <svg class="brand-mark" viewBox="0 0 40 40" fill="none">
-        <path d="M20 3 L35 11 V29 L20 37 L5 29 V11 Z" fill="#0EA5A0"/>
-        <path d="M20 3 L35 11 L20 19 L5 11 Z" fill="#5ED4CD"/>
-        <text x="20" y="26" text-anchor="middle" font-family="Baloo 2" font-weight="700" font-size="14" fill="#0B2338">M</text>
-      </svg>
-      <span>Mazoo</span>
-    </div>
-    <div class="stats" id="statsBar">
-      <div class="stat stat-streak" title="Ketma-ket kunlar">
-        <span class="stat-icon">🔥</span><span id="streakVal">0</span>
-      </div>
-      <div class="stat stat-xp" title="Tajriba ballari">
-        <span class="stat-icon">⭐</span><span id="xpVal">0</span>
-      </div>
-      <button class="logout-btn" id="logoutBtn" title="Chiqish">⎋</button>
-    </div>
-  </div>
-</header>
+window.addEventListener('error', function (e) {
+  const trailEl = document.getElementById('trail');
+  if (trailEl) {
+    trailEl.innerHTML = '<p style="text-align:center;color:#E8544C;padding:30px 18px;font-weight:600;">XATO: ' + e.message + '</p>';
+  }
+});
 
-<!-- AUTH VIEW -->
-<main id="authView" class="auth-view">
-  <div class="auth-card">
-    <div class="hero-mascot">
-      <svg viewBox="0 0 120 120" class="mascot-svg">
-        <circle cx="60" cy="66" r="42" fill="#0EA5A0"/>
-        <circle cx="44" cy="58" r="7" fill="#0B2338"/>
-        <circle cx="76" cy="58" r="7" fill="#0B2338"/>
-        <circle cx="46" cy="56" r="2.4" fill="#fff"/>
-        <circle cx="78" cy="56" r="2.4" fill="#fff"/>
-        <path d="M46 80 Q60 92 74 80" stroke="#0B2338" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <path d="M30 40 L20 18 M90 40 L100 18" stroke="#F2B705" stroke-width="6" stroke-linecap="round"/>
-        <circle cx="18" cy="14" r="6" fill="#F2B705"/>
-        <circle cx="102" cy="14" r="6" fill="#F2B705"/>
-      </svg>
-    </div>
-    <h1 id="authTitle">Xush kelibsiz!</h1>
-    <p class="hero-sub" id="authSub">Davom etish uchun ro'yxatdan o'ting</p>
+if (typeof supabase === 'undefined') {
+  document.body.innerHTML = '<p style="text-align:center;color:#E8544C;padding:30px 18px;font-weight:600;">XATO: Supabase kutubxonasi yuklanmadi (CDN muammosi)</p>';
+  throw new Error('supabase is undefined');
+}
 
-    <input type="email" id="authEmail" class="auth-input" placeholder="Email" autocomplete="email">
-    <input type="password" id="authPassword" class="auth-input" placeholder="Parol (kamida 6 ta belgi)" autocomplete="current-password">
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    <div class="auth-error" id="authError" style="display:none;"></div>
+// ---------- AUTH STATE ----------
+let currentUser = null;
+let profile = null;
+let authMode = 'signup'; // yoki 'signin'
 
-    <button class="btn-primary btn-start" id="authSubmitBtn">Ro'yxatdan o'tish</button>
-    <button class="btn-secondary" id="authToggleBtn">Akkountingiz bormi? Kiring</button>
-  </div>
-</main>
+async function initAuth() {
+  const { data: { session } } = await db.auth.getSession();
+  if (session && session.user) {
+    await onLoggedIn(session.user);
+  } else {
+    showView('auth');
+  }
+}
 
-<!-- PATH VIEW -->
-<main id="pathView" class="path-view" style="display:none;">
-  <section class="hero">
-    <div class="hero-mascot">
-      <svg viewBox="0 0 120 120" class="mascot-svg">
-        <circle cx="60" cy="66" r="42" fill="#0EA5A0"/>
-        <circle cx="60" cy="66" r="42" fill="url(#tileGrad)" opacity="0.25"/>
-        <circle cx="44" cy="58" r="7" fill="#0B2338"/>
-        <circle cx="76" cy="58" r="7" fill="#0B2338"/>
-        <circle cx="46" cy="56" r="2.4" fill="#fff"/>
-        <circle cx="78" cy="56" r="2.4" fill="#fff"/>
-        <path d="M46 80 Q60 92 74 80" stroke="#0B2338" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <path d="M30 40 L20 18 M90 40 L100 18" stroke="#F2B705" stroke-width="6" stroke-linecap="round"/>
-        <circle cx="18" cy="14" r="6" fill="#F2B705"/>
-        <circle cx="102" cy="14" r="6" fill="#F2B705"/>
-        <defs>
-          <linearGradient id="tileGrad" x1="0" y1="0" x2="120" y2="120">
-            <stop offset="0" stop-color="#fff"/>
-            <stop offset="1" stop-color="#0B2338"/>
-          </linearGradient>
-        </defs>
-      </svg>
-    </div>
-    <h1>5-sinf matematika yo'li</h1>
-    <p class="hero-sub">Har bir mavzuni bosib o'ting, yulduz to'plang, ketma-ketlikni uzmang.</p>
-    <div class="rank-badge" id="rankBadge">🌱 Boshlovchi</div>
-  </section>
+db.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' && session && session.user) {
+    onLoggedIn(session.user);
+  }
+  if (event === 'SIGNED_OUT') {
+    currentUser = null;
+    profile = null;
+    document.getElementById('topbar').style.display = 'none';
+    showView('auth');
+  }
+});
 
-  <button class="daily-card" id="dailyChallengeBtn">
-    <span class="daily-icon">🎯</span>
-    <span class="daily-text">
-      <strong id="dailyTitle">Kunlik mashq</strong>
-      <span id="dailySub">5 ta aralash savol — bugun sinab ko'ring</span>
-    </span>
-  </button>
+async function onLoggedIn(user) {
+  currentUser = user;
+  await loadOrCreateProfile(user.id);
+  document.getElementById('topbar').style.display = 'block';
+  showView('path');
+  loadPath();
+}
 
-  <div class="trail" id="trail">
-    <!-- JS orqali to'ldiriladi -->
-  </div>
-</main>
+async function loadOrCreateProfile(userId) {
+  let { data, error } = await db.from('profiles').select('*').eq('id', userId).single();
+  if (error || !data) {
+    const { data: created } = await db
+      .from('profiles')
+      .insert({ id: userId, xp: 0, streak: 0, done_lessons: [] })
+      .select()
+      .single();
+    data = created;
+  }
+  profile = data || { xp: 0, streak: 0, last_active: null, done_lessons: [] };
+  renderStats();
+}
 
-<!-- LESSON MODAL -->
-<div class="modal-backdrop" id="lessonBackdrop">
-  <div class="modal lesson-modal">
-    <button class="modal-close" id="closeLessonModal">✕</button>
-    <div class="lesson-badge" id="lessonBadge">MAVZU</div>
-    <h2 id="lessonTitle">—</h2>
-    <div class="lesson-content" id="lessonContent">—</div>
-    <button class="btn-primary btn-start" id="startQuizBtn">Testni boshlash</button>
-    <div class="lesson-empty" id="lessonEmpty" style="display:none;">Bu mavzuga hali testlar qo'shilmagan.</div>
-  </div>
-</div>
+async function syncProfile(fields) {
+  if (!currentUser) return;
+  await db.from('profiles').update(fields).eq('id', currentUser.id);
+}
 
-<!-- QUIZ VIEW -->
-<main id="quizView" class="quiz-view" style="display:none;">
-  <div class="combo-badge" id="comboBadge"></div>
-  <div class="quiz-topbar">
-    <button class="quiz-exit" id="quizExitBtn">✕</button>
-    <div class="progress-track">
-      <div class="progress-fill" id="progressFill"></div>
-    </div>
-    <div class="hearts" id="heartsDisplay">❤️❤️❤️❤️❤️</div>
-  </div>
+function renderStats() {
+  if (!profile) return;
+  document.getElementById('xpVal').textContent = profile.xp || 0;
+  document.getElementById('streakVal').textContent = profile.streak || 0;
+  updateRankBadge();
+  updateDailyButtonState();
+}
 
-  <div class="quiz-body">
-    <div class="q-counter" id="qCounter">Savol 1 / 15</div>
-    <h2 class="q-text" id="qText">Savol matni shu yerda</h2>
-    <div class="q-options" id="qOptions"></div>
-  </div>
+function getRank(xp) {
+  if (xp >= 1000) return { emoji: '🏆', title: 'Chempion' };
+  if (xp >= 600) return { emoji: '⭐', title: 'Usta' };
+  if (xp >= 300) return { emoji: '🧠', title: 'Bilimdon' };
+  if (xp >= 100) return { emoji: '📘', title: "O'rganuvchi" };
+  return { emoji: '🌱', title: 'Boshlovchi' };
+}
 
-  <div class="quiz-footer" id="quizFooter">
-    <button class="btn-primary btn-check" id="checkBtn" disabled>Tekshirish</button>
-  </div>
-</main>
+function updateRankBadge() {
+  const el = document.getElementById('rankBadge');
+  if (!el || !profile) return;
+  const rank = getRank(profile.xp || 0);
+  el.textContent = `${rank.emoji} ${rank.title}`;
+}
 
-<!-- RESULT VIEW -->
-<main id="resultView" class="result-view" style="display:none;">
-  <div class="result-card">
-    <div class="result-emoji" id="resultEmoji">🎉</div>
-    <h2 id="resultTitle">Ajoyib!</h2>
-    <p id="resultSub">Siz mavzuni yakunladingiz</p>
-    <div class="result-stats">
-      <div class="result-stat"><span id="resultCorrect">0</span><label>to'g'ri</label></div>
-      <div class="result-stat"><span id="resultXp">+0</span><label>XP</label></div>
-    </div>
-    <button class="btn-primary btn-start" id="backToPathBtn">Yo'lga qaytish</button>
-  </div>
-</main>
+function updateDailyButtonState() {
+  const btn = document.getElementById('dailyChallengeBtn');
+  const title = document.getElementById('dailyTitle');
+  const sub = document.getElementById('dailySub');
+  if (!btn || !profile) return;
 
-<!-- HEARTS OVER VIEW -->
-<main id="gameOverView" class="result-view" style="display:none;">
-  <div class="result-card">
-    <div class="result-emoji">💔</div>
-    <h2>Jonlar tugadi</h2>
-    <p>Xavotir olmang, qayta urinib ko'ring!</p>
-    <button class="btn-primary btn-start" id="retryBtn">Qayta boshlash</button>
-    <button class="btn-secondary" id="giveUpBtn">Yo'lga qaytish</button>
-  </div>
-</main>
+  const today = new Date().toISOString().slice(0, 10);
+  if (profile.last_daily_challenge === today) {
+    btn.disabled = true;
+    title.textContent = "Bugungi mashq bajarildi ✅";
+    sub.textContent = "Ertaga yana keling!";
+  } else {
+    btn.disabled = false;
+    title.textContent = "Kunlik mashq";
+    sub.textContent = "5 ta aralash savol — bugun sinab ko'ring";
+  }
+}
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js"></script>
-<script src="app.js?v=2"></script>
-</body>
-</html>
+async function markDailyChallengeDone() {
+  if (!profile) return;
+  const today = new Date().toISOString().slice(0, 10);
+  profile.last_daily_challenge = today;
+  updateDailyButtonState();
+  syncProfile({ last_daily_challenge: today });
+}
+
+let isDailyMode = false;
+
+async function startDailyChallenge() {
+  const { data: allQ, error } = await db.from('questions').select('*');
+  if (error || !allQ || allQ.length === 0) return;
+
+  const picked = shuffleArray(allQ).slice(0, 5);
+
+  isDailyMode = true;
+  currentLesson = null;
+  currentQuestions = picked;
+  currentIndex = 0;
+  correctCount = 0;
+  hearts = 5;
+  comboCount = 0;
+
+  showView('quiz');
+  renderQuestion();
+}
+
+document.getElementById('dailyChallengeBtn').addEventListener('click', startDailyChallenge);
+
+function addXp(amount) {
+  if (!profile) return;
+  profile.xp = (profile.xp || 0) + amount;
+  renderStats();
+  syncProfile({ xp: profile.xp });
+}
+
+function registerActivityToday() {
+  if (!profile) return;
+  const today = new Date().toISOString().slice(0, 10);
+  if (profile.last_active === today) return;
+  let streak = profile.streak || 0;
+  if (profile.last_active) {
+    const diffDays = Math.round((new Date(today) - new Date(profile.last_active)) / 86400000);
+    streak = diffDays === 1 ? streak + 1 : 1;
+  } else {
+    streak = 1;
+  }
+  profile.streak = streak;
+  profile.last_active = today;
+  renderStats();
+  syncProfile({ streak: profile.streak, last_active: profile.last_active });
+}
+
+function markLessonDone(lessonId) {
+  if (!profile) return;
+  const done = profile.done_lessons || [];
+  if (!done.includes(lessonId)) {
+    done.push(lessonId);
+    profile.done_lessons = done;
+    syncProfile({ done_lessons: done });
+  }
+}
+
+function isLessonDone(lessonId) {
+  return profile && profile.done_lessons && profile.done_lessons.includes(lessonId);
+}
+
+// ---------- AUTH FORM ----------
+function updateAuthUI() {
+  const title = document.getElementById('authTitle');
+  const sub = document.getElementById('authSub');
+  const submitBtn = document.getElementById('authSubmitBtn');
+  const toggleBtn = document.getElementById('authToggleBtn');
+  document.getElementById('authError').style.display = 'none';
+
+  if (authMode === 'signup') {
+    title.textContent = "Xush kelibsiz!";
+    sub.textContent = "Davom etish uchun ro'yxatdan o'ting";
+    submitBtn.textContent = "Ro'yxatdan o'tish";
+    toggleBtn.textContent = "Akkountingiz bormi? Kiring";
+  } else {
+    title.textContent = "Qaytganingizdan xursandmiz!";
+    sub.textContent = "Hisobingizga kiring";
+    submitBtn.textContent = "Kirish";
+    toggleBtn.textContent = "Akkountingiz yo'qmi? Ro'yxatdan o'ting";
+  }
+}
+
+document.getElementById('authToggleBtn').addEventListener('click', () => {
+  authMode = authMode === 'signup' ? 'signin' : 'signup';
+  updateAuthUI();
+});
+
+document.getElementById('authSubmitBtn').addEventListener('click', async () => {
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const errEl = document.getElementById('authError');
+  errEl.style.display = 'none';
+
+  if (!email || !password) {
+    errEl.textContent = "Email va parolni to'ldiring";
+    errEl.style.display = 'block';
+    return;
+  }
+  if (password.length < 6) {
+    errEl.textContent = "Parol kamida 6 ta belgidan iborat bo'lishi kerak";
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const submitBtn = document.getElementById('authSubmitBtn');
+  submitBtn.disabled = true;
+
+  let result;
+  if (authMode === 'signup') {
+    result = await db.auth.signUp({ email, password });
+  } else {
+    result = await db.auth.signInWithPassword({ email, password });
+  }
+
+  submitBtn.disabled = false;
+
+  if (result.error) {
+    errEl.textContent = result.error.message;
+    errEl.style.display = 'block';
+  }
+  // Muvaffaqiyatli bo'lsa, onAuthStateChange avtomatik ishga tushadi
+});
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  db.auth.signOut();
+});
+
+// ---------- SOUND EFFECTS ----------
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; }
+  }
+  return audioCtx;
+}
+function playTone(freq, duration, type) {
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+  try {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.value = freq;
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration / 1000);
+    osc.start();
+    osc.stop(ctx.currentTime + duration / 1000);
+  } catch (e) {}
+}
+function playCorrectSound() {
+  playTone(880, 120, 'sine');
+  setTimeout(() => playTone(1175, 160, 'sine'), 90);
+}
+function playIncorrectSound() {
+  playTone(220, 260, 'sawtooth');
+}
+
+// ---------- COMBO ----------
+let comboCount = 0;
+function showComboBadge(count) {
+  const el = document.getElementById('comboBadge');
+  if (!el) return;
+  el.textContent = `🔥 ${count} ta ketma-ket!`;
+  el.classList.add('show');
+  clearTimeout(showComboBadge._t);
+  showComboBadge._t = setTimeout(() => el.classList.remove('show'), 1100);
+}
+
+// ---------- CONFETTI ----------
+function fireConfetti() {
+  const colors = ['#0EA5A0', '#F2B705', '#E85D4C', '#5ED4CD', '#3CB878'];
+  for (let i = 0; i < 40; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + 'vw';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.setProperty('--rot', (Math.random() * 720 - 360) + 'deg');
+    piece.style.animationDuration = (2 + Math.random() * 1.5) + 's';
+    document.body.appendChild(piece);
+    setTimeout(() => piece.remove(), 3600);
+  }
+}
+
+// ---------- APP STATE ----------
+let topicsWithLessons = [];
+let currentLesson = null;
+let currentQuestions = [];
+let currentIndex = 0;
+let correctCount = 0;
+let hearts = 5;
+let selectedOption = null;
+let answered = false;
+
+// ---------- DATA LOADING ----------
+async function loadPath() {
+  const trailEl = document.getElementById('trail');
+  trailEl.innerHTML = '<p style="text-align:center;color:#8592A0;padding:30px 0;">Yuklanmoqda...</p>';
+
+  try {
+    const { data: topics, error: topicsErr } = await db
+      .from('topics')
+      .select('*')
+      .eq('grade', 5)
+      .order('book_part', { ascending: true })
+      .order('order_index', { ascending: true });
+
+    if (topicsErr) {
+      trailEl.innerHTML = `<p style="text-align:center;color:#E8544C;padding:30px 18px;font-weight:600;">Xatolik: ${topicsErr.message}</p>`;
+      return;
+    }
+    if (!topics || topics.length === 0) {
+      trailEl.innerHTML = `<p style="text-align:center;color:#8592A0;padding:30px 18px;">Hozircha mavzular topilmadi.</p>`;
+      return;
+    }
+
+    const topicIds = topics.map(t => t.id);
+
+    const { data: allLessons } = await db
+      .from('lessons')
+      .select('*')
+      .in('topic_id', topicIds)
+      .order('order_index', { ascending: true });
+
+    const lessonByTopic = {};
+    (allLessons || []).forEach(l => {
+      if (!lessonByTopic[l.topic_id]) lessonByTopic[l.topic_id] = l;
+    });
+    const lessonIds = (allLessons || []).map(l => l.id);
+
+    let countByLesson = {};
+    if (lessonIds.length > 0) {
+      const { data: allQuestions } = await db
+        .from('questions')
+        .select('lesson_id')
+        .in('lesson_id', lessonIds);
+      (allQuestions || []).forEach(q => {
+        countByLesson[q.lesson_id] = (countByLesson[q.lesson_id] || 0) + 1;
+      });
+    }
+
+    topicsWithLessons = topics.map(topic => {
+      const lesson = lessonByTopic[topic.id] || null;
+      const questionCount = lesson ? (countByLesson[lesson.id] || 0) : 0;
+      return { topic, lesson, questionCount };
+    });
+
+    renderTrail();
+  } catch (err) {
+    trailEl.innerHTML = `<p style="text-align:center;color:#E8544C;padding:30px 18px;font-weight:600;">Kutilmagan xato: ${err.message}</p>`;
+  }
+}
+
+function renderTrail() {
+  const trailEl = document.getElementById('trail');
+  trailEl.innerHTML = '';
+
+  topicsWithLessons.forEach((item, idx) => {
+    const wrap = document.createElement('div');
+    const side = idx % 3 === 0 ? '' : (idx % 3 === 1 ? 'offset-right' : 'offset-left');
+    wrap.className = `node-wrap ${side}`;
+
+    const done = item.lesson && isLessonDone(item.lesson.id);
+    const hasQuestions = item.questionCount > 0;
+
+    const btn = document.createElement('button');
+    btn.className = `node ${done ? 'done' : ''}`;
+    btn.style.animationDelay = `${idx * 0.06}s`;
+    btn.textContent = done ? '⭐' : (hasQuestions ? '✏️' : '📖');
+    btn.addEventListener('click', () => openLessonModal(item));
+
+    const label = document.createElement('div');
+    label.className = 'node-label';
+    label.textContent = item.topic.title;
+
+    const count = document.createElement('div');
+    count.className = 'node-count';
+    count.textContent = hasQuestions ? `${item.questionCount} ta test` : 'testlar tez orada';
+
+    wrap.appendChild(btn);
+    wrap.appendChild(label);
+    wrap.appendChild(count);
+    trailEl.appendChild(wrap);
+  });
+}
+
+// ---------- LESSON MODAL ----------
+function openLessonModal(item) {
+  document.getElementById('lessonBadge').textContent = item.topic.title.toUpperCase();
+  document.getElementById('lessonTitle').textContent = item.lesson ? item.lesson.title : item.topic.title;
+  document.getElementById('lessonContent').textContent = item.lesson ? item.lesson.content : 'Kontent tez orada qo\'shiladi.';
+
+  const startBtn = document.getElementById('startQuizBtn');
+  const emptyMsg = document.getElementById('lessonEmpty');
+
+  if (item.questionCount > 0) {
+    startBtn.style.display = 'block';
+    emptyMsg.style.display = 'none';
+    startBtn.onclick = () => startQuiz(item.lesson);
+  } else {
+    startBtn.style.display = 'none';
+    emptyMsg.style.display = 'block';
+  }
+
+  document.getElementById('lessonBackdrop').classList.add('show');
+}
+
+document.getElementById('closeLessonModal').addEventListener('click', () => {
+  document.getElementById('lessonBackdrop').classList.remove('show');
+});
+document.getElementById('lessonBackdrop').addEventListener('click', (e) => {
+  if (e.target.id === 'lessonBackdrop') e.target.classList.remove('show');
+});
+
+// ---------- QUIZ FLOW ----------
+async function startQuiz(lesson) {
+  document.getElementById('lessonBackdrop').classList.remove('show');
+
+  const { data: questions, error } = await db
+    .from('questions')
+    .select('*')
+    .eq('lesson_id', lesson.id);
+
+  if (error || !questions || questions.length === 0) return;
+
+  currentLesson = lesson;
+  currentQuestions = shuffleArray(questions);
+  currentIndex = 0;
+  correctCount = 0;
+  hearts = 5;
+  comboCount = 0;
+
+  showView('quiz');
+  renderQuestion();
+}
+
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function renderQuestion() {
+  answered = false;
+  selectedOption = null;
+
+  const q = currentQuestions[currentIndex];
+  document.getElementById('qCounter').textContent = `Savol ${currentIndex + 1} / ${currentQuestions.length}`;
+  document.getElementById('qText').textContent = q.question_text;
+
+  const progressPct = (currentIndex / currentQuestions.length) * 100;
+  document.getElementById('progressFill').style.width = `${progressPct}%`;
+  document.getElementById('heartsDisplay').textContent = '❤️'.repeat(hearts) + '🖤'.repeat(5 - hearts);
+
+  const optionsEl = document.getElementById('qOptions');
+  optionsEl.innerHTML = '';
+
+  let options = q.options;
+  if (typeof options === 'string') {
+    try { options = JSON.parse(options); } catch (e) { options = []; }
+  }
+  options = shuffleArray(options); // har safar variantlar tartibini aralashtiramiz
+
+  options.forEach((opt) => {
+    const b = document.createElement('button');
+    b.className = 'q-option';
+    b.textContent = opt;
+    b.addEventListener('click', () => selectOption(b, opt));
+    optionsEl.appendChild(b);
+  });
+
+  const checkBtn = document.getElementById('checkBtn');
+  checkBtn.disabled = true;
+  checkBtn.textContent = 'Tekshirish';
+  checkBtn.onclick = handleCheckOrNext;
+}
+
+function selectOption(btnEl, value) {
+  if (answered) return;
+  document.querySelectorAll('.q-option').forEach(b => b.classList.remove('selected'));
+  btnEl.classList.add('selected');
+  selectedOption = value;
+  document.getElementById('checkBtn').disabled = false;
+}
+
+function handleCheckOrNext() {
+  if (!answered) {
+    checkAnswer();
+  } else {
+    goToNextQuestion();
+  }
+}
+
+function checkAnswer() {
+  answered = true;
+  const q = currentQuestions[currentIndex];
+  const isCorrect = String(selectedOption).trim() === String(q.correct_answer).trim();
+
+  document.querySelectorAll('.q-option').forEach(b => {
+    b.disabled = true;
+    if (b.textContent === q.correct_answer) b.classList.add('correct');
+    else if (b.classList.contains('selected') && !isCorrect) b.classList.add('incorrect');
+  });
+
+  if (isCorrect) {
+    correctCount++;
+    comboCount++;
+    playCorrectSound();
+    if (comboCount >= 2) showComboBadge(comboCount);
+  } else {
+    comboCount = 0;
+    playIncorrectSound();
+    hearts--;
+    document.getElementById('heartsDisplay').textContent = '❤️'.repeat(Math.max(hearts,0)) + '🖤'.repeat(5 - Math.max(hearts,0));
+  }
+
+  const checkBtn = document.getElementById('checkBtn');
+  checkBtn.disabled = false;
+  checkBtn.textContent = currentIndex === currentQuestions.length - 1 ? 'Yakunlash' : 'Keyingisi';
+
+  if (hearts <= 0) {
+    setTimeout(() => showView('gameOver'), 900);
+  }
+}
+
+function goToNextQuestion() {
+  if (hearts <= 0) return;
+  currentIndex++;
+  if (currentIndex >= currentQuestions.length) {
+    finishQuiz();
+  } else {
+    renderQuestion();
+  }
+}
+
+function finishQuiz() {
+  const xpEarned = correctCount * 10;
+  addXp(xpEarned);
+  registerActivityToday();
+
+  if (isDailyMode) {
+    markDailyChallengeDone();
+    isDailyMode = false;
+  } else if (currentLesson) {
+    markLessonDone(currentLesson.id);
+  }
+
+  document.getElementById('resultCorrect').textContent = `${correctCount}/${currentQuestions.length}`;
+  document.getElementById('resultXp').textContent = `+${xpEarned}`;
+
+  const ratio = correctCount / currentQuestions.length;
+  document.getElementById('resultEmoji').textContent = ratio >= 0.8 ? '🏆' : ratio >= 0.5 ? '🎉' : '💪';
+  document.getElementById('resultTitle').textContent = ratio >= 0.8 ? 'Zo\'r natija!' : ratio >= 0.5 ? 'Yaxshi ish!' : 'Davom eting!';
+
+  if (ratio === 1) fireConfetti();
+
+  showView('result');
+  renderTrail();
+}
+
+// ---------- VIEW SWITCHING ----------
+function showView(name) {
+  document.getElementById('authView').style.display = name === 'auth' ? 'flex' : 'none';
+  document.getElementById('pathView').style.display = name === 'path' ? 'block' : 'none';
+  document.getElementById('quizView').style.display = name === 'quiz' ? 'flex' : 'none';
+  document.getElementById('resultView').style.display = name === 'result' ? 'flex' : 'none';
+  document.getElementById('gameOverView').style.display = name === 'gameOver' ? 'flex' : 'none';
+  window.scrollTo(0, 0);
+}
+
+document.getElementById('quizExitBtn').addEventListener('click', () => { isDailyMode = false; showView('path'); });
+document.getElementById('backToPathBtn').addEventListener('click', () => showView('path'));
+document.getElementById('giveUpBtn').addEventListener('click', () => { isDailyMode = false; showView('path'); });
+document.getElementById('retryBtn').addEventListener('click', () => startQuiz(currentLesson));
+
+// ---------- INIT ----------
+updateAuthUI();
+initAuth();
