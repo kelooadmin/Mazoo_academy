@@ -74,7 +74,71 @@ function renderStats() {
   if (!profile) return;
   document.getElementById('xpVal').textContent = profile.xp || 0;
   document.getElementById('streakVal').textContent = profile.streak || 0;
+  updateRankBadge();
+  updateDailyButtonState();
 }
+
+function getRank(xp) {
+  if (xp >= 1000) return { emoji: '🏆', title: 'Chempion' };
+  if (xp >= 600) return { emoji: '⭐', title: 'Usta' };
+  if (xp >= 300) return { emoji: '🧠', title: 'Bilimdon' };
+  if (xp >= 100) return { emoji: '📘', title: "O'rganuvchi" };
+  return { emoji: '🌱', title: 'Boshlovchi' };
+}
+
+function updateRankBadge() {
+  const el = document.getElementById('rankBadge');
+  if (!el || !profile) return;
+  const rank = getRank(profile.xp || 0);
+  el.textContent = `${rank.emoji} ${rank.title}`;
+}
+
+function updateDailyButtonState() {
+  const btn = document.getElementById('dailyChallengeBtn');
+  const title = document.getElementById('dailyTitle');
+  const sub = document.getElementById('dailySub');
+  if (!btn || !profile) return;
+
+  const today = new Date().toISOString().slice(0, 10);
+  if (profile.last_daily_challenge === today) {
+    btn.disabled = true;
+    title.textContent = "Bugungi mashq bajarildi ✅";
+    sub.textContent = "Ertaga yana keling!";
+  } else {
+    btn.disabled = false;
+    title.textContent = "Kunlik mashq";
+    sub.textContent = "5 ta aralash savol — bugun sinab ko'ring";
+  }
+}
+
+async function markDailyChallengeDone() {
+  if (!profile) return;
+  const today = new Date().toISOString().slice(0, 10);
+  profile.last_daily_challenge = today;
+  updateDailyButtonState();
+  syncProfile({ last_daily_challenge: today });
+}
+
+let isDailyMode = false;
+
+async function startDailyChallenge() {
+  const { data: allQ, error } = await db.from('questions').select('*');
+  if (error || !allQ || allQ.length === 0) return;
+
+  const picked = shuffleArray(allQ).slice(0, 5);
+
+  isDailyMode = true;
+  currentLesson = null;
+  currentQuestions = picked;
+  currentIndex = 0;
+  correctCount = 0;
+  hearts = 5;
+
+  showView('quiz');
+  renderQuestion();
+}
+
+document.getElementById('dailyChallengeBtn').addEventListener('click', startDailyChallenge);
 
 function addXp(amount) {
   if (!profile) return;
@@ -432,7 +496,13 @@ function finishQuiz() {
   const xpEarned = correctCount * 10;
   addXp(xpEarned);
   registerActivityToday();
-  if (currentLesson) markLessonDone(currentLesson.id);
+
+  if (isDailyMode) {
+    markDailyChallengeDone();
+    isDailyMode = false;
+  } else if (currentLesson) {
+    markLessonDone(currentLesson.id);
+  }
 
   document.getElementById('resultCorrect').textContent = `${correctCount}/${currentQuestions.length}`;
   document.getElementById('resultXp').textContent = `+${xpEarned}`;
@@ -455,9 +525,9 @@ function showView(name) {
   window.scrollTo(0, 0);
 }
 
-document.getElementById('quizExitBtn').addEventListener('click', () => showView('path'));
+document.getElementById('quizExitBtn').addEventListener('click', () => { isDailyMode = false; showView('path'); });
 document.getElementById('backToPathBtn').addEventListener('click', () => showView('path'));
-document.getElementById('giveUpBtn').addEventListener('click', () => showView('path'));
+document.getElementById('giveUpBtn').addEventListener('click', () => { isDailyMode = false; showView('path'); });
 document.getElementById('retryBtn').addEventListener('click', () => startQuiz(currentLesson));
 
 // ---------- INIT ----------
