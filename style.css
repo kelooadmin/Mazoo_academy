@@ -462,3 +462,45 @@ h1, h2, .brand span, .q-counter-label {
 .daily-text { display: flex; flex-direction: column; color: var(--white); }
 .daily-text strong { font-family: 'Baloo 2', sans-serif; font-size: 16px; }
 .daily-text span { font-size: 13px; opacity: 0.9; margin-top: 2px; }
+
+/* ---------- COMBO BADGE ---------- */
+.combo-badge {
+  position: fixed;
+  top: 90px;
+  left: 50%;
+  transform: translateX(-50%) scale(0.7);
+  background: var(--gold);
+  color: var(--ink);
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 100;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.combo-badge.show {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+/* ---------- CONFETTI ---------- */
+.confetti-piece {
+  position: fixed;
+  top: -20px;
+  width: 10px;
+  height: 10px;
+  z-index: 200;
+  pointer-events: none;
+  border-radius: 2px;
+  animation: confetti-fall linear forwards;
+}
+@keyframes confetti-fall {
+  to {
+    top: 110vh;
+    transform: rotate(var(--rot));
+  }
+}
