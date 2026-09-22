@@ -429,3 +429,36 @@ h1, h2, .brand span, .q-counter-label {
   cursor: pointer;
   color: #8592A0;
 }
+
+/* ---------- RANK BADGE & DAILY CHALLENGE ---------- */
+.rank-badge {
+  display: inline-block;
+  margin-top: 10px;
+  background: var(--white);
+  border: 2px solid var(--gold);
+  color: var(--navy);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 5px 14px;
+  border-radius: 999px;
+}
+.daily-card {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: linear-gradient(135deg, var(--teal), var(--teal-light));
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  margin-top: 20px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #0A7A76;
+  text-align: left;
+}
+.daily-card:active { transform: translateY(3px); box-shadow: 0 1px 0 #0A7A76; }
+.daily-card:disabled { opacity: 0.6; cursor: default; box-shadow: none; }
+.daily-icon { font-size: 30px; }
+.daily-text { display: flex; flex-direction: column; color: var(--white); }
+.daily-text strong { font-family: 'Baloo 2', sans-serif; font-size: 16px; }
+.daily-text span { font-size: 13px; opacity: 0.9; margin-top: 2px; }
