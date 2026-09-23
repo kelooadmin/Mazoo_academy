@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Mazoo Academy — 5-sinf matematika</title>
+<meta name="google-site-verification" content="iJQjzZiLbPIjoRCA9rvblJARDEedGH4dq5Fod3t6el8" />
+<meta name="description" content="Mazoo Academy — 5-sinf o'quvchilari uchun bepul, o'yin uslubidagi matematika platformasi. Natural sonlar, kasrlar va matnli masalalar bo'yicha 150 dan ortiq test, XP va streak tizimi bilan.">
+<meta name="keywords" content="matematika, 5-sinf, test, o'zbek, Mazoo, DTM, online ta'lim">
+<meta property="og:title" content="Mazoo Academy — 5-sinf matematika">
+<meta property="og:description" content="O'yin uslubidagi matematika platformasi — testlar, XP, streak.">
+<meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
@@ -130,12 +136,32 @@
     <div class="q-counter" id="qCounter">Savol 1 / 15</div>
     <h2 class="q-text" id="qText">Savol matni shu yerda</h2>
     <div class="q-options" id="qOptions"></div>
+    <button class="explain-btn" id="explainBtn" style="display:none;">🤖 Nega xato? Tushuntirib bering</button>
+    <div class="explain-box" id="explainBox" style="display:none;"></div>
   </div>
 
   <div class="quiz-footer" id="quizFooter">
     <button class="btn-primary btn-check" id="checkBtn" disabled>Tekshirish</button>
   </div>
 </main>
+
+<!-- AI YORDAMCHI -->
+<button class="ai-fab" id="aiFabBtn" style="display:none;">💬</button>
+<div class="ai-panel-backdrop" id="aiPanelBackdrop">
+  <div class="ai-panel">
+    <div class="ai-panel-header">
+      <span>🤖 Matematik yordamchi</span>
+      <button class="modal-close" id="aiPanelClose">✕</button>
+    </div>
+    <div class="ai-messages" id="aiMessages">
+      <div class="ai-msg ai-msg-bot">Salom! Matematikadan savolingiz bo'lsa, bemalol so'rang 😊</div>
+    </div>
+    <div class="ai-input-row">
+      <input type="text" id="aiInput" class="auth-input" placeholder="Savolingizni yozing...">
+      <button class="ai-send-btn" id="aiSendBtn">➤</button>
+    </div>
+  </div>
+</div>
 
 <!-- RESULT VIEW -->
 <main id="resultView" class="result-view" style="display:none;">
