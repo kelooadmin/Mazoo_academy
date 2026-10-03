@@ -1,5 +1,5 @@
 // ============================================================
-// MAZOO ACADEMY — asosiy ilova mantiqi (Auth bilan)
+// MAZOO ACADEMY — asosiy ilova mantiqi
 // ============================================================
 
 window.addEventListener('error', function (e) {
@@ -21,6 +21,7 @@ const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentUser = null;
 let profile = null;
 let authMode = 'signup'; // yoki 'signin'
+let currentGrade = 5;
 
 async function initAuth() {
   const { data: { session } } = await db.auth.getSession();
@@ -39,6 +40,7 @@ db.auth.onAuthStateChange((event, session) => {
     currentUser = null;
     profile = null;
     document.getElementById('topbar').style.display = 'none';
+    document.getElementById('aiFabBtn').style.display = 'none';
     showView('auth');
   }
 });
@@ -47,9 +49,23 @@ async function onLoggedIn(user) {
   currentUser = user;
   await loadOrCreateProfile(user.id);
   document.getElementById('topbar').style.display = 'block';
+  document.getElementById('aiFabBtn').style.display = 'flex';
   showView('path');
   loadPath();
 }
+
+// ---------- SINF TANLASH ----------
+document.querySelectorAll('.grade-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const grade = parseInt(btn.dataset.grade, 10);
+    if (grade === currentGrade) return;
+    currentGrade = grade;
+    document.querySelectorAll('.grade-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('pathTitle').textContent = `${grade}-sinf matematika yo'li`;
+    loadPath();
+  });
+});
 
 async function loadOrCreateProfile(userId) {
   let { data, error } = await db.from('profiles').select('*').eq('id', userId).single();
@@ -61,7 +77,7 @@ async function loadOrCreateProfile(userId) {
       .single();
     data = created;
   }
-  profile = data || { xp: 0, streak: 0, last_active: null, done_lessons: [] };
+  profile = data || { xp: 0, streak: 0, last_active: null, done_lessons: [], last_daily_challenge: null };
   renderStats();
 }
 
@@ -118,28 +134,6 @@ async function markDailyChallengeDone() {
   updateDailyButtonState();
   syncProfile({ last_daily_challenge: today });
 }
-
-let isDailyMode = false;
-
-async function startDailyChallenge() {
-  const { data: allQ, error } = await db.from('questions').select('*');
-  if (error || !allQ || allQ.length === 0) return;
-
-  const picked = shuffleArray(allQ).slice(0, 5);
-
-  isDailyMode = true;
-  currentLesson = null;
-  currentQuestions = picked;
-  currentIndex = 0;
-  correctCount = 0;
-  hearts = 5;
-  comboCount = 0;
-
-  showView('quiz');
-  renderQuestion();
-}
-
-document.getElementById('dailyChallengeBtn').addEventListener('click', startDailyChallenge);
 
 function addXp(amount) {
   if (!profile) return;
@@ -238,12 +232,83 @@ document.getElementById('authSubmitBtn').addEventListener('click', async () => {
     errEl.textContent = result.error.message;
     errEl.style.display = 'block';
   }
-  // Muvaffaqiyatli bo'lsa, onAuthStateChange avtomatik ishga tushadi
 });
 
 document.getElementById('logoutBtn').addEventListener('click', () => {
   db.auth.signOut();
 });
+
+// ---------- AI YORDAMCHI ----------
+async function askAI(prompt) {
+  try {
+    const res = await fetch('/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
+    });
+    const data = await res.json();
+    if (!res.ok) return `Xatolik: ${data.error || 'noma\'lum xato'}`;
+    return data.text || 'Javob topilmadi.';
+  } catch (e) {
+    return 'Yordamchiga ulanib bo\'lmadi. Internetni tekshiring.';
+  }
+}
+
+document.getElementById('aiFabBtn').addEventListener('click', () => {
+  document.getElementById('aiPanelBackdrop').classList.add('show');
+});
+document.getElementById('aiPanelClose').addEventListener('click', () => {
+  document.getElementById('aiPanelBackdrop').classList.remove('show');
+});
+document.getElementById('aiPanelBackdrop').addEventListener('click', (e) => {
+  if (e.target.id === 'aiPanelBackdrop') e.target.classList.remove('show');
+});
+
+function addAiMessage(text, sender) {
+  const wrap = document.getElementById('aiMessages');
+  const div = document.createElement('div');
+  div.className = `ai-msg ${sender === 'user' ? 'ai-msg-user' : 'ai-msg-bot'}`;
+  div.textContent = text;
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+async function sendAiMessage() {
+  const input = document.getElementById('aiInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  addAiMessage(text, 'user');
+  addAiMessage('...', 'bot');
+  const wrap = document.getElementById('aiMessages');
+  const thinking = wrap.lastChild;
+
+  const reply = await askAI(text);
+  thinking.textContent = reply;
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+document.getElementById('aiSendBtn').addEventListener('click', sendAiMessage);
+document.getElementById('aiInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') sendAiMessage();
+});
+
+async function explainCurrentAnswer() {
+  const q = currentQuestions[currentIndex];
+  const box = document.getElementById('explainBox');
+  const btn = document.getElementById('explainBtn');
+  btn.disabled = true;
+  btn.textContent = 'Yuklanmoqda...';
+  box.style.display = 'block';
+  box.textContent = '...';
+
+  const prompt = `Savol: ${q.question_text}\nTo'g'ri javob: ${q.correct_answer}\n\n${currentGrade}-sinf o'quvchisiga shu savolni qanday yechish kerakligini qisqa va sodda tushuntirib bering.`;
+  const reply = await askAI(prompt);
+  box.textContent = reply;
+  btn.style.display = 'none';
+}
+
+document.getElementById('explainBtn').addEventListener('click', explainCurrentAnswer);
 
 // ---------- SOUND EFFECTS ----------
 let audioCtx = null;
@@ -312,6 +377,7 @@ let correctCount = 0;
 let hearts = 5;
 let selectedOption = null;
 let answered = false;
+let isDailyMode = false;
 
 // ---------- DATA LOADING ----------
 async function loadPath() {
@@ -322,7 +388,7 @@ async function loadPath() {
     const { data: topics, error: topicsErr } = await db
       .from('topics')
       .select('*')
-      .eq('grade', 5)
+      .eq('grade', currentGrade)
       .order('book_part', { ascending: true })
       .order('order_index', { ascending: true });
 
@@ -444,6 +510,7 @@ async function startQuiz(lesson) {
 
   if (error || !questions || questions.length === 0) return;
 
+  isDailyMode = false;
   currentLesson = lesson;
   currentQuestions = shuffleArray(questions);
   currentIndex = 0;
@@ -454,6 +521,31 @@ async function startQuiz(lesson) {
   showView('quiz');
   renderQuestion();
 }
+
+async function startDailyChallenge() {
+  const { data: gradeTopics } = await db.from('topics').select('id').eq('grade', currentGrade);
+  const gradeTopicIds = (gradeTopics || []).map(t => t.id);
+  const { data: gradeLessons } = await db.from('lessons').select('id').in('topic_id', gradeTopicIds);
+  const gradeLessonIds = (gradeLessons || []).map(l => l.id);
+
+  const { data: allQ, error } = await db.from('questions').select('*').in('lesson_id', gradeLessonIds);
+  if (error || !allQ || allQ.length === 0) return;
+
+  const picked = shuffleArray(allQ).slice(0, 5);
+
+  isDailyMode = true;
+  currentLesson = null;
+  currentQuestions = picked;
+  currentIndex = 0;
+  correctCount = 0;
+  hearts = 5;
+  comboCount = 0;
+
+  showView('quiz');
+  renderQuestion();
+}
+
+document.getElementById('dailyChallengeBtn').addEventListener('click', startDailyChallenge);
 
 function shuffleArray(arr) {
   const a = [...arr];
@@ -467,6 +559,8 @@ function shuffleArray(arr) {
 function renderQuestion() {
   answered = false;
   selectedOption = null;
+  document.getElementById('explainBtn').style.display = 'none';
+  document.getElementById('explainBox').style.display = 'none';
 
   const q = currentQuestions[currentIndex];
   document.getElementById('qCounter').textContent = `Savol ${currentIndex + 1} / ${currentQuestions.length}`;
@@ -483,7 +577,7 @@ function renderQuestion() {
   if (typeof options === 'string') {
     try { options = JSON.parse(options); } catch (e) { options = []; }
   }
-  options = shuffleArray(options); // har safar variantlar tartibini aralashtiramiz
+  options = shuffleArray(options);
 
   options.forEach((opt) => {
     const b = document.createElement('button');
@@ -536,6 +630,10 @@ function checkAnswer() {
     playIncorrectSound();
     hearts--;
     document.getElementById('heartsDisplay').textContent = '❤️'.repeat(Math.max(hearts,0)) + '🖤'.repeat(5 - Math.max(hearts,0));
+    const explainBtn = document.getElementById('explainBtn');
+    explainBtn.style.display = 'block';
+    explainBtn.disabled = false;
+    explainBtn.textContent = "🤖 Nega xato? Tushuntirib bering";
   }
 
   const checkBtn = document.getElementById('checkBtn');
