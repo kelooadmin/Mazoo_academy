@@ -310,6 +310,122 @@ async function explainCurrentAnswer() {
 
 document.getElementById('explainBtn').addEventListener('click', explainCurrentAnswer);
 
+// ---------- INTERAKTIV GEOMETRIYA ----------
+let geoShape = 'rect';
+
+document.getElementById('geoOpenBtn').addEventListener('click', () => {
+  showView('geo');
+  renderGeo();
+});
+document.getElementById('geoExitBtn').addEventListener('click', () => showView('path'));
+
+document.querySelectorAll('.geo-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    geoShape = btn.dataset.shape;
+    document.querySelectorAll('.geo-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const hideB = geoShape === 'square' || geoShape === 'circle';
+    document.getElementById('geoRowB').style.display = hideB ? 'none' : 'block';
+    const labelA = document.getElementById('geoLabelSideA');
+    const labelB = document.getElementById('geoLabelSideB');
+    const labelsMap = {
+      rect: ['Uzunlik (a): ', 'Kenglik (b): '],
+      square: ['Tomon (a): ', ''],
+      triangle: ['Asos (a): ', 'Balandlik (b): '],
+      circle: ['Radius (a): ', ''],
+      parallelogram: ['Asos (a): ', 'Balandlik (b): '],
+      rhombus: ['1-diagonal (a): ', '2-diagonal (b): ']
+    };
+    labelA.firstChild.textContent = labelsMap[geoShape][0];
+    labelB.firstChild.textContent = labelsMap[geoShape][1];
+    renderGeo();
+  });
+});
+
+document.getElementById('geoSliderA').addEventListener('input', renderGeo);
+document.getElementById('geoSliderB').addEventListener('input', renderGeo);
+
+function renderGeo() {
+  const a = parseInt(document.getElementById('geoSliderA').value, 10);
+  const b = (geoShape === 'square' || geoShape === 'circle') ? a : parseInt(document.getElementById('geoSliderB').value, 10);
+  document.getElementById('geoValA').textContent = a;
+  document.getElementById('geoValB').textContent = b;
+
+  const ox = 40, oy = 200;
+  const shapeEl = document.getElementById('geoShape');
+  const circleEl = document.getElementById('geoCircle');
+  const labelAEl = document.getElementById('geoLabelA');
+  const labelBEl = document.getElementById('geoLabelB');
+  const formulaBox = document.getElementById('geoFormulaBox');
+
+  // avval hammasini tozalaymiz
+  shapeEl.setAttribute('points', '');
+  circleEl.style.display = 'none';
+
+  if (geoShape === 'rect' || geoShape === 'square') {
+    const scale = Math.min(220 / a, 160 / b);
+    const w = a * scale, h = b * scale;
+    shapeEl.setAttribute('points', `${ox},${oy} ${ox+w},${oy} ${ox+w},${oy-h} ${ox},${oy-h}`);
+    labelAEl.setAttribute('x', ox + w/2 - 10); labelAEl.setAttribute('y', oy + 22);
+    labelAEl.textContent = `a = ${a}`;
+    labelBEl.setAttribute('x', ox - 32); labelBEl.setAttribute('y', oy - h/2);
+    labelBEl.textContent = geoShape === 'square' ? '' : `b = ${b}`;
+
+    formulaBox.textContent = geoShape === 'square'
+      ? `Perimetr = 4 × a = 4 × ${a} = ${4*a} birlik\nYuza = a² = ${a} × ${a} = ${a*a} kv. birlik`
+      : `Perimetr = 2 × (a + b) = 2 × (${a} + ${b}) = ${2*(a+b)} birlik\nYuza = a × b = ${a} × ${b} = ${a*b} kv. birlik`;
+
+  } else if (geoShape === 'triangle') {
+    const scale = Math.min(220 / a, 160 / b);
+    const w = a * scale, h = b * scale;
+    shapeEl.setAttribute('points', `${ox},${oy} ${ox+w},${oy} ${ox},${oy-h}`);
+    labelAEl.setAttribute('x', ox + w/2 - 10); labelAEl.setAttribute('y', oy + 22);
+    labelAEl.textContent = `asos = ${a}`;
+    labelBEl.setAttribute('x', ox - 46); labelBEl.setAttribute('y', oy - h/2);
+    labelBEl.textContent = `balandlik = ${b}`;
+
+    formulaBox.textContent = `Yuza = (asos × balandlik) ÷ 2 = (${a} × ${b}) ÷ 2 = ${(a*b)/2} kv. birlik`;
+
+  } else if (geoShape === 'circle') {
+    const scale = 80 / a;
+    const r = a * scale;
+    circleEl.style.display = 'block';
+    circleEl.setAttribute('cx', 160); circleEl.setAttribute('cy', 120); circleEl.setAttribute('r', r);
+    labelAEl.setAttribute('x', 160 - 22); labelAEl.setAttribute('y', 120 + 5);
+    labelAEl.textContent = `r = ${a}`;
+    labelBEl.textContent = '';
+
+    const per = (2 * 3.14 * a).toFixed(1);
+    const area = (3.14 * a * a).toFixed(1);
+    formulaBox.textContent = `Aylana uzunligi = 2 × π × r ≈ 2 × 3.14 × ${a} = ${per} birlik\nYuza = π × r² ≈ 3.14 × ${a}² = ${area} kv. birlik`;
+
+  } else if (geoShape === 'parallelogram') {
+    const scale = Math.min(180 / a, 140 / b);
+    const w = a * scale, h = b * scale, skew = h * 0.5;
+    shapeEl.setAttribute('points', `${ox},${oy} ${ox+w},${oy} ${ox+w+skew},${oy-h} ${ox+skew},${oy-h}`);
+    labelAEl.setAttribute('x', ox + w/2 - 10); labelAEl.setAttribute('y', oy + 22);
+    labelAEl.textContent = `asos = ${a}`;
+    labelBEl.setAttribute('x', ox - 46); labelBEl.setAttribute('y', oy - h/2);
+    labelBEl.textContent = `balandlik = ${b}`;
+
+    formulaBox.textContent = `Yuza = asos × balandlik = ${a} × ${b} = ${a*b} kv. birlik`;
+
+  } else if (geoShape === 'rhombus') {
+    const cx = 160, cy = 120;
+    const scale = Math.min(220 / a, 160 / b);
+    const hw = (a * scale) / 2, hh = (b * scale) / 2;
+    shapeEl.setAttribute('points', `${cx},${cy-hh} ${cx+hw},${cy} ${cx},${cy+hh} ${cx-hw},${cy}`);
+    labelAEl.setAttribute('x', cx - 18); labelAEl.setAttribute('y', cy + hh + 20);
+    labelAEl.textContent = `d1 = ${a}`;
+    labelBEl.setAttribute('x', cx + hw + 8); labelBEl.setAttribute('y', cy);
+    labelBEl.textContent = `d2 = ${b}`;
+
+    const area = (a * b) / 2;
+    const side = Math.sqrt((a/2)**2 + (b/2)**2).toFixed(1);
+    formulaBox.textContent = `Yuza = (d1 × d2) ÷ 2 = (${a} × ${b}) ÷ 2 = ${area} kv. birlik\nTomon ≈ ${side} birlik (Pifagor teoremasi bo'yicha)`;
+  }
+}
+
 // ---------- SOUND EFFECTS ----------
 let audioCtx = null;
 function getAudioCtx() {
@@ -687,6 +803,7 @@ function showView(name) {
   document.getElementById('quizView').style.display = name === 'quiz' ? 'flex' : 'none';
   document.getElementById('resultView').style.display = name === 'result' ? 'flex' : 'none';
   document.getElementById('gameOverView').style.display = name === 'gameOver' ? 'flex' : 'none';
+  document.getElementById('geoView').style.display = name === 'geo' ? 'block' : 'none';
   window.scrollTo(0, 0);
 }
 
