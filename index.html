@@ -108,6 +108,14 @@
     </span>
   </button>
 
+  <button class="daily-card geo-card" id="geoOpenBtn">
+    <span class="daily-icon">📐</span>
+    <span class="daily-text">
+      <strong>Interaktiv geometriya</strong>
+      <span>Shaklni o'zgartiring, perimetr/yuza jonli hisoblansin</span>
+    </span>
+  </button>
+
   <div class="trail" id="trail">
     <!-- JS orqali to'ldiriladi -->
   </div>
@@ -147,6 +155,45 @@
   <div class="quiz-footer" id="quizFooter">
     <button class="btn-primary btn-check" id="checkBtn" disabled>Tekshirish</button>
   </div>
+</main>
+
+<!-- GEOMETRIYA VIEW -->
+<main id="geoView" class="geo-view" style="display:none;">
+  <div class="quiz-topbar">
+    <button class="quiz-exit" id="geoExitBtn">✕</button>
+    <h2 class="geo-title">Interaktiv geometriya</h2>
+  </div>
+
+  <div class="geo-tabs">
+    <button class="geo-tab active" data-shape="rect">To'rtburchak</button>
+    <button class="geo-tab" data-shape="square">Kvadrat</button>
+    <button class="geo-tab" data-shape="triangle">Uchburchak</button>
+    <button class="geo-tab" data-shape="circle">Aylana</button>
+    <button class="geo-tab" data-shape="parallelogram">Parallelogramm</button>
+    <button class="geo-tab" data-shape="rhombus">Romb</button>
+  </div>
+
+  <div class="geo-canvas-wrap">
+    <svg id="geoSvg" viewBox="0 0 300 240" class="geo-svg">
+      <polygon id="geoShape" points="" fill="#5ED4CD" stroke="#0EA5A0" stroke-width="3"/>
+      <circle id="geoCircle" cx="160" cy="120" r="0" fill="#5ED4CD" stroke="#0EA5A0" stroke-width="3" style="display:none;"/>
+      <text id="geoLabelA" font-family="Baloo 2" font-size="14" fill="#1B2A4A" font-weight="700"></text>
+      <text id="geoLabelB" font-family="Baloo 2" font-size="14" fill="#1B2A4A" font-weight="700"></text>
+    </svg>
+  </div>
+
+  <div class="geo-controls" id="geoControls">
+    <div class="geo-slider-row">
+      <label id="geoLabelSideA">Uzunlik (a): <span id="geoValA">8</span> birlik</label>
+      <input type="range" id="geoSliderA" min="1" max="15" value="8">
+    </div>
+    <div class="geo-slider-row" id="geoRowB">
+      <label id="geoLabelSideB">Kenglik (b): <span id="geoValB">5</span> birlik</label>
+      <input type="range" id="geoSliderB" min="1" max="15" value="5">
+    </div>
+  </div>
+
+  <div class="geo-formula-box" id="geoFormulaBox"></div>
 </main>
 
 <!-- AI YORDAMCHI -->
