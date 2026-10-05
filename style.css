@@ -634,3 +634,80 @@ h1, h2, .brand span, .q-counter-label {
   .hero h1 { font-size: 22px; }
   .node { width: 74px; height: 74px; font-size: 28px; }
 }
+
+/* ---------- GEOMETRIYA ---------- */
+.geo-card {
+  margin-top: 12px;
+  background: linear-gradient(135deg, #F2B705, #F7D154);
+  box-shadow: 0 4px 0 #B88A00;
+}
+.geo-card:active { box-shadow: 0 1px 0 #B88A00; }
+
+.geo-view {
+  max-width: 520px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding: 16px 18px 40px;
+}
+.geo-title {
+  font-size: 18px;
+  color: var(--navy);
+  margin: 0;
+  flex: 1;
+}
+.geo-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0;
+}
+.geo-tab {
+  flex: 1 1 30%;
+  border: none;
+  background: var(--cream-dim);
+  color: #5C6B7A;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 10px 6px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+.geo-tab.active { background: var(--teal); color: var(--white); }
+
+.geo-canvas-wrap {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.geo-svg { width: 100%; max-width: 320px; height: auto; }
+
+.geo-controls { margin-top: 20px; }
+.geo-slider-row { margin-bottom: 18px; }
+.geo-slider-row label {
+  display: block;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--navy);
+  margin-bottom: 8px;
+}
+.geo-slider-row input[type="range"] {
+  width: 100%;
+  accent-color: var(--teal);
+  height: 6px;
+}
+
+.geo-formula-box {
+  white-space: pre-line;
+  margin-top: 10px;
+  background: #EAFBF9;
+  border: 2px solid var(--teal-light);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #0B2338;
+  font-weight: 600;
+}
