@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mazoo-academy.vercel.app/sitemap.xml
