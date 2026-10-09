@@ -804,6 +804,7 @@ function showView(name) {
   document.getElementById('resultView').style.display = name === 'result' ? 'flex' : 'none';
   document.getElementById('gameOverView').style.display = name === 'gameOver' ? 'flex' : 'none';
   document.getElementById('geoView').style.display = name === 'geo' ? 'block' : 'none';
+  document.getElementById('seoAbout').style.display = name === 'auth' ? 'block' : 'none';
   window.scrollTo(0, 0);
 }
 
