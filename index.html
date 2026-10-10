@@ -1,265 +1,162 @@
-<!DOCTYPE html>
-<html lang="uz">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Mazoo Academy — 5-6-7-sinf matematika</title>
-<meta name="google-site-verification" content="iJQjzZiLbPIjoRCA9rvblJARDEedGH4dq5Fod3t6el8" />
-<meta name="description" content="Mazoo Academy — 5, 6 va 7-sinf o'quvchilari uchun bepul, o'yin uslubidagi matematika platformasi. Natural sonlar, kasrlar, nisbat, algebra va chiziqli funksiya bo'yicha 430 dan ortiq test, XP va streak tizimi bilan.">
-<meta name="keywords" content="matematika, 5-sinf, 6-sinf, 7-sinf, algebra, test, o'zbek, Mazoo, DTM, online ta'lim">
-<meta property="og:title" content="Mazoo Academy — 5-6-7-sinf matematika">
-<meta property="og:description" content="O'yin uslubidagi matematika platformasi — testlar, XP, streak.">
-<meta property="og:type" content="website">
-<link rel="canonical" href="https://mazoo-academy.vercel.app/">
-<meta name="robots" content="index, follow">
-<script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebApplication","name":"Mazoo Academy","url":"https://mazoo-academy.vercel.app/","applicationCategory":"EducationalApplication","operatingSystem":"Web","inLanguage":"uz","description":"5, 6 va 7-sinf o'quvchilari uchun bepul, o'yin uslubidagi matematika platformasi: darslar, testlar, AI yordamchi, XP va streak tizimi.","audience":{"@type":"EducationalAudience","educationalRole":"student"},"offers":{"@type":"Offer","price":"0","priceCurrency":"UZS"}}
-</script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
+-- =====================================================
+-- 7-SINF GEOMETRIYA — 6 ta mavzu (grade=7, algebra mavzulariga qo'shiladi)
+-- =====================================================
 
-<!-- TOP BAR -->
-<header class="topbar" id="topbar" style="display:none;">
-  <div class="topbar-inner">
-    <div class="brand">
-      <svg class="brand-mark" viewBox="0 0 40 40" fill="none">
-        <path d="M20 3 L35 11 V29 L20 37 L5 29 V11 Z" fill="#0EA5A0"/>
-        <path d="M20 3 L35 11 L20 19 L5 11 Z" fill="#5ED4CD"/>
-        <text x="20" y="26" text-anchor="middle" font-family="Baloo 2" font-weight="700" font-size="14" fill="#0B2338">M</text>
-      </svg>
-      <span>Mazoo</span>
-    </div>
-    <div class="stats" id="statsBar">
-      <div class="stat stat-streak" title="Ketma-ket kunlar">
-        <span class="stat-icon">🔥</span><span id="streakVal">0</span>
-      </div>
-      <div class="stat stat-xp" title="Tajriba ballari">
-        <span class="stat-icon">⭐</span><span id="xpVal">0</span>
-      </div>
-      <button class="logout-btn" id="logoutBtn" title="Chiqish">⎋</button>
-    </div>
-  </div>
-</header>
+-- Qayta ishga tushirish uchun xavfsiz: faqat geometriya mavzularini tozalaydi
+DELETE FROM questions WHERE lesson_id IN (
+  SELECT l.id FROM lessons l JOIN topics t ON l.topic_id=t.id WHERE t.grade=7 AND t.title IN ($$Burchaklar: qo'shni va vertikal burchaklar$$, $$Uchburchak va uning turlari$$, $$Uchburchaklar tengligi alomatlari$$, $$Teng yonli uchburchak$$, $$Parallel to'g'ri chiziqlar$$, $$Uchburchak burchaklari yig'indisi$$));
+DELETE FROM lessons WHERE topic_id IN (SELECT id FROM topics WHERE grade=7 AND title IN ($$Burchaklar: qo'shni va vertikal burchaklar$$, $$Uchburchak va uning turlari$$, $$Uchburchaklar tengligi alomatlari$$, $$Teng yonli uchburchak$$, $$Parallel to'g'ri chiziqlar$$, $$Uchburchak burchaklari yig'indisi$$));
+DELETE FROM topics WHERE grade=7 AND title IN ($$Burchaklar: qo'shni va vertikal burchaklar$$, $$Uchburchak va uning turlari$$, $$Uchburchaklar tengligi alomatlari$$, $$Teng yonli uchburchak$$, $$Parallel to'g'ri chiziqlar$$, $$Uchburchak burchaklari yig'indisi$$);
 
-<!-- AUTH VIEW -->
-<main id="authView" class="auth-view">
-  <div class="auth-card">
-    <div class="hero-mascot">
-      <svg viewBox="0 0 120 120" class="mascot-svg">
-        <circle cx="60" cy="66" r="42" fill="#0EA5A0"/>
-        <circle cx="44" cy="58" r="7" fill="#0B2338"/>
-        <circle cx="76" cy="58" r="7" fill="#0B2338"/>
-        <circle cx="46" cy="56" r="2.4" fill="#fff"/>
-        <circle cx="78" cy="56" r="2.4" fill="#fff"/>
-        <path d="M46 80 Q60 92 74 80" stroke="#0B2338" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <path d="M30 40 L20 18 M90 40 L100 18" stroke="#F2B705" stroke-width="6" stroke-linecap="round"/>
-        <circle cx="18" cy="14" r="6" fill="#F2B705"/>
-        <circle cx="102" cy="14" r="6" fill="#F2B705"/>
-      </svg>
-    </div>
-    <h1 id="authTitle">Xush kelibsiz!</h1>
-    <p class="hero-sub" id="authSub">Davom etish uchun ro'yxatdan o'ting</p>
+INSERT INTO topics (title, grade, book_part, order_index) VALUES
+($$Burchaklar: qo'shni va vertikal burchaklar$$, 7, 1, 8),
+($$Uchburchak va uning turlari$$, 7, 1, 9),
+($$Uchburchaklar tengligi alomatlari$$, 7, 1, 10),
+($$Teng yonli uchburchak$$, 7, 1, 11),
+($$Parallel to'g'ri chiziqlar$$, 7, 1, 12),
+($$Uchburchak burchaklari yig'indisi$$, 7, 1, 13);
 
-    <input type="email" id="authEmail" class="auth-input" placeholder="Email" autocomplete="email">
-    <input type="password" id="authPassword" class="auth-input" placeholder="Parol (kamida 6 ta belgi)" autocomplete="current-password">
+INSERT INTO lessons (topic_id, title, order_index, content_type, content) VALUES
 
-    <div class="auth-error" id="authError" style="display:none;"></div>
+((SELECT id FROM topics WHERE title=$$Burchaklar: qo'shni va vertikal burchaklar$$ AND grade=7), $$Burchaklar: qo'shni va vertikal burchaklar$$, 1, 'lesson',
+$$Ta'rif: Umumiy boshlang'ichga ega ikki nur burchak hosil qiladi.
 
-    <button class="btn-primary btn-start" id="authSubmitBtn">Ro'yxatdan o'tish</button>
-    <button class="btn-secondary" id="authToggleBtn">Akkountingiz bormi? Kiring</button>
-  </div>
-</main>
+Burchak turlari:
+• o'tkir burchak — 90° dan kichik
+• to'g'ri burchak — 90° ga teng
+• o'tmas burchak — 90° dan katta, 180° dan kichik
+• yoyiq burchak — 180° ga teng
 
-<!-- SEO: QIDIRUV TIZIMLARI UCHUN MATNLI BO'LIM -->
-<section id="seoAbout" class="seo-about">
-  <h2>Mazoo Academy — 5, 6 va 7-sinf matematika o'yin shaklida</h2>
-  <p>Mazoo Academy — o'zbek tilidagi bepul ta'lim platformasi. O'quvchi mavzularni "yo'l" bo'ylab bosqichma-bosqich o'tadi, testlar yechadi, XP va kunlik streak to'playdi. Platformada sun'iy intellekt yordamchisi, interaktiv geometriya vositasi va kunlik mashq bor.</p>
-  <h3>5-sinf matematika</h3>
-  <p>Natural sonlarni qo'shish, ayirish, ko'paytirish va bo'lish, matnli masalalar, oddiy kasrlar va o'nli kasrlar.</p>
-  <h3>6-sinf matematika</h3>
-  <p>EKUB va EKUK, kasrlarni taqqoslash va ular bilan amallar, nisbat va proporsiya, musbat va manfiy sonlar.</p>
-  <h3>7-sinf algebra</h3>
-  <p>Natural ko'rsatkichli daraja, birhad va ko'phadlar, qisqa ko'paytirish formulalari, ko'phadni ko'paytuvchilarga ajratish, chiziqli tenglamalar, chiziqli funksiya va tenglamalar sistemasi.</p>
-  <p>Har bir sinf uchun mavzu bo'yicha testlar va barcha mavzularni takrorlash uchun 45 talik yakuniy test mavjud.</p>
-</section>
+Qo'shni burchaklar: bir tomoni umumiy, qolgan tomonlari to'ldiruvchi nurlar bo'lgan burchaklar. Ularning yig'indisi 180°.
 
-<!-- PATH VIEW -->
-<main id="pathView" class="path-view" style="display:none;">
-  <section class="hero">
-    <div class="hero-mascot">
-      <svg viewBox="0 0 120 120" class="mascot-svg">
-        <circle cx="60" cy="66" r="42" fill="#0EA5A0"/>
-        <circle cx="60" cy="66" r="42" fill="url(#tileGrad)" opacity="0.25"/>
-        <circle cx="44" cy="58" r="7" fill="#0B2338"/>
-        <circle cx="76" cy="58" r="7" fill="#0B2338"/>
-        <circle cx="46" cy="56" r="2.4" fill="#fff"/>
-        <circle cx="78" cy="56" r="2.4" fill="#fff"/>
-        <path d="M46 80 Q60 92 74 80" stroke="#0B2338" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <path d="M30 40 L20 18 M90 40 L100 18" stroke="#F2B705" stroke-width="6" stroke-linecap="round"/>
-        <circle cx="18" cy="14" r="6" fill="#F2B705"/>
-        <circle cx="102" cy="14" r="6" fill="#F2B705"/>
-        <defs>
-          <linearGradient id="tileGrad" x1="0" y1="0" x2="120" y2="120">
-            <stop offset="0" stop-color="#fff"/>
-            <stop offset="1" stop-color="#0B2338"/>
-          </linearGradient>
-        </defs>
-      </svg>
-    </div>
-    <h1 id="pathTitle">5-sinf matematika yo'li</h1>
-    <p class="hero-sub">Har bir mavzuni bosib o'ting, yulduz to'plang, ketma-ketlikni uzmang.</p>
-    <div class="rank-badge" id="rankBadge">🌱 Boshlovchi</div>
-    <div class="grade-tabs" id="gradeTabs">
-      <button class="grade-tab active" data-grade="5">5-sinf</button>
-      <button class="grade-tab" data-grade="6">6-sinf</button>
-      <button class="grade-tab" data-grade="7">7-sinf</button>
-    </div>
-  </section>
+Vertikal burchaklar: ikki to'g'ri chiziq kesishganda hosil bo'ladi va o'zaro teng.
 
-  <button class="daily-card" id="dailyChallengeBtn">
-    <span class="daily-icon">🎯</span>
-    <span class="daily-text">
-      <strong id="dailyTitle">Kunlik mashq</strong>
-      <span id="dailySub">5 ta aralash savol — bugun sinab ko'ring</span>
-    </span>
-  </button>
+Bissektrisa: burchakni teng ikkiga bo'luvchi nur.
 
-  <button class="daily-card geo-card" id="geoOpenBtn">
-    <span class="daily-icon">📐</span>
-    <span class="daily-text">
-      <strong>Interaktiv geometriya</strong>
-      <span>Shaklni o'zgartiring, perimetr/yuza jonli hisoblansin</span>
-    </span>
-  </button>
+— MISOLLAR —
 
-  <div class="trail" id="trail">
-    <!-- JS orqali to'ldiriladi -->
-  </div>
-</main>
+Misol 1: Qo'shni burchaklardan biri 65° bo'lsa, ikkinchisi necha gradus?
+Yechim: 180° − 65° = 115°.
 
-<!-- LESSON MODAL -->
-<div class="modal-backdrop" id="lessonBackdrop">
-  <div class="modal lesson-modal">
-    <button class="modal-close" id="closeLessonModal">✕</button>
-    <div class="lesson-badge" id="lessonBadge">MAVZU</div>
-    <h2 id="lessonTitle">—</h2>
-    <div class="lesson-content" id="lessonContent">—</div>
-    <button class="btn-primary btn-start" id="startQuizBtn">Testni boshlash</button>
-    <div class="lesson-empty" id="lessonEmpty" style="display:none;">Bu mavzuga hali testlar qo'shilmagan.</div>
-  </div>
-</div>
+Misol 2: Vertikal burchaklardan biri 48° bo'lsa, ikkinchisi?
+Yechim: vertikal burchaklar teng, demak 48°.
 
-<!-- QUIZ VIEW -->
-<main id="quizView" class="quiz-view" style="display:none;">
-  <div class="combo-badge" id="comboBadge"></div>
-  <div class="quiz-topbar">
-    <button class="quiz-exit" id="quizExitBtn">✕</button>
-    <div class="progress-track">
-      <div class="progress-fill" id="progressFill"></div>
-    </div>
-    <div class="hearts" id="heartsDisplay">❤️❤️❤️❤️❤️</div>
-  </div>
+Misol 3: 80° li burchakning bissektrisasi uni qanday burchaklarga ajratadi?
+Yechim: 80° ÷ 2 = 40° dan ikkita burchakka.
 
-  <div class="quiz-body">
-    <div class="q-counter" id="qCounter">Savol 1 / 15</div>
-    <h2 class="q-text" id="qText">Savol matni shu yerda</h2>
-    <div class="q-options" id="qOptions"></div>
-    <button class="explain-btn" id="explainBtn" style="display:none;">🤖 Nega xato? Tushuntirib bering</button>
-    <div class="explain-box" id="explainBox" style="display:none;"></div>
-  </div>
+Misol 4: Qo'shni burchaklarning ayirmasi 40° bo'lsa, ularni toping.
+Yechim: kichigi x bo'lsin: x + (x + 40) = 180, x = 70°. Burchaklar: 70° va 110°.$$),
 
-  <div class="quiz-footer" id="quizFooter">
-    <button class="btn-primary btn-check" id="checkBtn" disabled>Tekshirish</button>
-  </div>
-</main>
+((SELECT id FROM topics WHERE title=$$Uchburchak va uning turlari$$ AND grade=7), $$Uchburchak va uning turlari$$, 1, 'lesson',
+$$Ta'rif: Bir to'g'ri chiziqda yotmaydigan uchta nuqta va ularni tutashtiruvchi uchta kesmadan iborat shakl uchburchak deyiladi.
 
-<!-- GEOMETRIYA VIEW -->
-<main id="geoView" class="geo-view" style="display:none;">
-  <div class="quiz-topbar">
-    <button class="quiz-exit" id="geoExitBtn">✕</button>
-    <h2 class="geo-title">Interaktiv geometriya</h2>
-  </div>
+Tomonlariga ko'ra: turli tomonli, teng yonli (ikki tomoni teng), teng tomonli (uch tomoni teng).
+Burchaklariga ko'ra: o'tkir burchakli, to'g'ri burchakli, o'tmas burchakli.
 
-  <div class="geo-tabs">
-    <button class="geo-tab active" data-shape="rect">To'rtburchak</button>
-    <button class="geo-tab" data-shape="square">Kvadrat</button>
-    <button class="geo-tab" data-shape="triangle">Uchburchak</button>
-    <button class="geo-tab" data-shape="circle">Aylana</button>
-    <button class="geo-tab" data-shape="parallelogram">Parallelogramm</button>
-    <button class="geo-tab" data-shape="rhombus">Romb</button>
-  </div>
+Perimetr: P = a + b + c.
 
-  <div class="geo-canvas-wrap">
-    <svg id="geoSvg" viewBox="0 0 300 240" class="geo-svg">
-      <polygon id="geoShape" points="" fill="#5ED4CD" stroke="#0EA5A0" stroke-width="3"/>
-      <circle id="geoCircle" cx="160" cy="120" r="0" fill="#5ED4CD" stroke="#0EA5A0" stroke-width="3" style="display:none;"/>
-      <text id="geoLabelA" font-family="Baloo 2" font-size="14" fill="#1B2A4A" font-weight="700"></text>
-      <text id="geoLabelB" font-family="Baloo 2" font-size="14" fill="#1B2A4A" font-weight="700"></text>
-    </svg>
-  </div>
+Muhim elementlar:
+• mediana — uchni qarshi tomon o'rtasi bilan tutashtiruvchi kesma
+• balandlik — uchdan qarshi tomonga tushirilgan perpendikulyar
+• bissektrisa — burchakni teng ikkiga bo'luvchi kesma
 
-  <div class="geo-controls" id="geoControls">
-    <div class="geo-slider-row">
-      <label id="geoLabelSideA">Uzunlik (a): <span id="geoValA">8</span> birlik</label>
-      <input type="range" id="geoSliderA" min="1" max="15" value="8">
-    </div>
-    <div class="geo-slider-row" id="geoRowB">
-      <label id="geoLabelSideB">Kenglik (b): <span id="geoValB">5</span> birlik</label>
-      <input type="range" id="geoSliderB" min="1" max="15" value="5">
-    </div>
-  </div>
+Uchburchak tengsizligi: har bir tomon qolgan ikki tomon yig'indisidan kichik bo'ladi.
 
-  <div class="geo-formula-box" id="geoFormulaBox"></div>
-</main>
+— MISOLLAR —
 
-<!-- AI YORDAMCHI -->
-<button class="ai-fab" id="aiFabBtn" style="display:none;">💬</button>
-<div class="ai-panel-backdrop" id="aiPanelBackdrop">
-  <div class="ai-panel">
-    <div class="ai-panel-header">
-      <span>🤖 Matematik yordamchi</span>
-      <button class="modal-close" id="aiPanelClose">✕</button>
-    </div>
-    <div class="ai-messages" id="aiMessages">
-      <div class="ai-msg ai-msg-bot">Salom! Matematikadan savolingiz bo'lsa, bemalol so'rang 😊</div>
-    </div>
-    <div class="ai-input-row">
-      <input type="text" id="aiInput" class="auth-input" placeholder="Savolingizni yozing...">
-      <button class="ai-send-btn" id="aiSendBtn">➤</button>
-    </div>
-  </div>
-</div>
+Misol 1: Tomonlari 5 sm, 7 sm, 9 sm bo'lgan uchburchakning perimetri?
+Yechim: 5 + 7 + 9 = 21 sm.
 
-<!-- RESULT VIEW -->
-<main id="resultView" class="result-view" style="display:none;">
-  <div class="result-card">
-    <div class="result-emoji" id="resultEmoji">🎉</div>
-    <h2 id="resultTitle">Ajoyib!</h2>
-    <p id="resultSub">Siz mavzuni yakunladingiz</p>
-    <div class="result-stats">
-      <div class="result-stat"><span id="resultCorrect">0</span><label>to'g'ri</label></div>
-      <div class="result-stat"><span id="resultXp">+0</span><label>XP</label></div>
-    </div>
-    <button class="btn-primary btn-start" id="backToPathBtn">Yo'lga qaytish</button>
-  </div>
-</main>
+Misol 2: Tomonlari 3, 4 va 8 sm bo'lgan uchburchak mavjudmi?
+Yechim: 3 + 4 = 7 < 8, demak mavjud emas.
 
-<!-- HEARTS OVER VIEW -->
-<main id="gameOverView" class="result-view" style="display:none;">
-  <div class="result-card">
-    <div class="result-emoji">💔</div>
-    <h2>Jonlar tugadi</h2>
-    <p>Xavotir olmang, qayta urinib ko'ring!</p>
-    <button class="btn-primary btn-start" id="retryBtn">Qayta boshlash</button>
-    <button class="btn-secondary" id="giveUpBtn">Yo'lga qaytish</button>
-  </div>
-</main>
+Misol 3: Teng yonli uchburchakning perimetri 20 sm, asosi 6 sm. Yon tomoni?
+Yechim: (20 − 6) ÷ 2 = 7 sm.$$),
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js"></script>
-<script src="app.js?v=5"></script>
-</body>
-</html>
+((SELECT id FROM topics WHERE title=$$Uchburchaklar tengligi alomatlari$$ AND grade=7), $$Uchburchaklar tengligi alomatlari$$, 1, 'lesson',
+$$Uchburchaklar tengligining alomatlari:
+• TBT (birinchi): ikki tomon va ular orasidagi burchak teng bo'lsa, uchburchaklar teng
+• BTB (ikkinchi): bir tomon va unga yopishgan ikkita burchak teng bo'lsa, uchburchaklar teng
+• TTT (uchinchi): uch tomon mos ravishda teng bo'lsa, uchburchaklar teng
+
+Teng uchburchaklarning mos elementlari (tomonlari, burchaklari, balandliklari, medianalari, perimetri) teng bo'ladi. Faqat uchta burchakning tengligi tenglik alomati emas.
+
+— MISOLLAR —
+
+Misol 1: ABC va DEF da AB = DE = 5 sm, AC = DF = 7 sm, ∠A = ∠D = 40°. Qaysi alomat?
+Yechim: ikki tomon va ular orasidagi burchak teng — TBT alomati.
+
+Misol 2: ABC va DEF teng, ∠A = 50° bo'lsa, ∠D?
+Yechim: mos burchaklar teng, ∠D = 50°.
+
+Misol 3: ABC va DEF teng, AB = 6, BC = 8, AC = 10 sm. EF = ?
+Yechim: EF tomoni BC ga mos, EF = 8 sm.$$),
+
+((SELECT id FROM topics WHERE title=$$Teng yonli uchburchak$$ AND grade=7), $$Teng yonli uchburchak$$, 1, 'lesson',
+$$Ta'rif: Ikki tomoni teng uchburchak teng yonli uchburchak deyiladi. Teng tomonlar yon tomonlar, uchinchisi asos.
+
+Xossalari:
+• asosidagi burchaklari teng
+• asosga tushirilgan mediana bir vaqtda balandlik va bissektrisa bo'ladi
+• teng tomonli uchburchakning har bir burchagi 60°
+
+— MISOLLAR —
+
+Misol 1: Uchidagi burchak 40° bo'lsa, asosidagi burchak?
+Yechim: (180° − 40°) ÷ 2 = 70°.
+
+Misol 2: Asosidagi burchak 50° bo'lsa, uchidagi burchak?
+Yechim: 180° − 2 · 50° = 80°.
+
+Misol 3: Perimetri 24 sm, yon tomoni 9 sm bo'lsa, asosi?
+Yechim: 24 − 2 · 9 = 6 sm.$$),
+
+((SELECT id FROM topics WHERE title=$$Parallel to'g'ri chiziqlar$$ AND grade=7), $$Parallel to'g'ri chiziqlar$$, 1, 'lesson',
+$$Ta'rif: Bir tekislikda yotib, kesishmaydigan to'g'ri chiziqlar parallel deyiladi (a ∥ b).
+
+Ikki to'g'ri chiziqni kesuvchi kesganda 8 ta burchak hosil bo'ladi. Ular orasida almashinuvchi, mos va bir tomonli burchaklar bor.
+
+Parallellik alomatlari: kesuvchi hosil qilgan almashinuvchi burchaklar teng, yoki mos burchaklar teng, yoki bir tomonli burchaklar yig'indisi 180° bo'lsa, to'g'ri chiziqlar parallel.
+
+Parallel chiziqlar xossalari (teskari teorema): almashinuvchi va mos burchaklar teng, bir tomonli burchaklar yig'indisi 180°.
+
+Uchinchi chiziqqa parallel ikki to'g'ri chiziq o'zaro parallel.
+
+— MISOLLAR —
+
+Misol 1: Parallel chiziqlarda almashinuvchi burchaklardan biri 70° bo'lsa, ikkinchisi?
+Yechim: almashinuvchi burchaklar teng, 70°.
+
+Misol 2: Bir tomonli burchaklardan biri 110° bo'lsa, ikkinchisi?
+Yechim: 180° − 110° = 70°.
+
+Misol 3: Almashinuvchi burchaklar (3x + 10)° va (5x − 30)°. Burchakni toping.
+Yechim: 3x + 10 = 5x − 30, x = 20, burchak 3 · 20 + 10 = 70°.$$),
+
+((SELECT id FROM topics WHERE title=$$Uchburchak burchaklari yig'indisi$$ AND grade=7), $$Uchburchak burchaklari yig'indisi$$, 1, 'lesson',
+$$Teorema: Uchburchak ichki burchaklarining yig'indisi 180° ga teng.
+
+Tashqi burchak: uchburchak ichki burchagiga qo'shni burchak. U o'ziga qo'shni bo'lmagan ikkita ichki burchak yig'indisiga teng.
+
+To'g'ri burchakli uchburchak:
+• o'tkir burchaklari yig'indisi 90°
+• 30° li burchak qarshisidagi katet gipotenuzaning yarmiga teng
+
+Uchburchakda eng ko'pi bilan bitta to'g'ri yoki o'tmas burchak bo'ladi.
+
+— MISOLLAR —
+
+Misol 1: Uchburchakning ikki burchagi 50° va 60° bo'lsa, uchinchisi?
+Yechim: 180° − 50° − 60° = 70°.
+
+Misol 2: Ikki ichki burchak 40° va 55° bo'lsa, uchinchi burchakka qo'shni tashqi burchak?
+Yechim: tashqi burchak 40° + 55° = 95° (uchinchi ichki burchak 85°, 180° − 85° = 95°).
+
+Misol 3: To'g'ri burchakli uchburchakda 30° li burchak qarshisidagi katet qanday, gipotenuza 14 sm bo'lsa?
+Yechim: 14 ÷ 2 = 7 sm.
+
+Misol 4: Burchaklar nisbati 2 : 3 : 4 bo'lsa, ularni toping.
+Yechim: 2k + 3k + 4k = 180°, k = 20°. Burchaklar: 40°, 60°, 80°.$$);
+
+
+-- Tekshirish: SELECT title, order_index FROM topics WHERE grade=7 ORDER BY book_part, order_index;
