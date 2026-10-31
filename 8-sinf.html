@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mazoo Academy — 8-sinf algebra</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --text:#1c1f26; --muted:#6b7280; --brand:#2563eb; --ok:#16a34a; --bad:#dc2626; --line:#e5e7eb; color-scheme: light; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#12141a; --card:#1c1f27; --text:#eceef3; --muted:#9aa1b0; --brand:#5b8cff; --ok:#34d399; --bad:#f87171; --line:#2c303b; color-scheme: dark; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.55 -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width:760px; margin:0 auto; padding:20px 16px 60px; }
+  h1 { font-size:1.5rem; margin:8px 0 4px; }
+  .muted { color:var(--muted); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; margin:12px 0; }
+  button { font:inherit; cursor:pointer; border-radius:10px; border:1px solid var(--line); background:var(--card); color:var(--text); padding:10px 14px; }
+  button.primary { background:var(--brand); border-color:var(--brand); color:#fff; }
+  button:disabled { opacity:.5; cursor:default; }
+  .topic { display:flex; justify-content:space-between; align-items:center; gap:10px; width:100%; text-align:left; }
+  .topic b { display:block; }
+  .opt { display:block; width:100%; text-align:left; margin:8px 0; }
+  .opt.ok { border-color:var(--ok); background:color-mix(in srgb, var(--ok) 15%, var(--card)); }
+  .opt.bad { border-color:var(--bad); background:color-mix(in srgb, var(--bad) 15%, var(--card)); }
+  .bar { height:8px; background:var(--line); border-radius:99px; overflow:hidden; margin:10px 0; }
+  .bar > i { display:block; height:100%; background:var(--brand); }
+  .row { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+  .note { margin-top:10px; padding:10px 12px; border-radius:10px; background:var(--bg); }
+  .md table { border-collapse:collapse; display:block; overflow-x:auto; }
+  .md th, .md td { border:1px solid var(--line); padding:6px 10px; }
+  .md code { background:var(--bg); padding:1px 5px; border-radius:5px; }
+  .big { font-size:2.4rem; font-weight:700; }
+  .err { color:var(--bad); }
+</style>
+</head>
+<body>
+<main id="app"><p class="muted">Yuklanmoqda…</p></main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script>
+// ====== SOZLAMA: config.js dagi qiymatlarni shu yerga yozing ======
+const SUPABASE_URL = "https://XXXX.supabase.co";
+const SUPABASE_ANON_KEY = "ANON_PUBLIC_KEY";
+// ==================================================================
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const app = document.getElementById("app");
+let topics = [];
+let quiz = null;
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+
+async function home() {
+  quiz = null;
+  app.innerHTML = '<h1>8-sinf algebra</h1><p class="muted">Yuklanmoqda…</p>';
+  const { data, error } = await sb.from("alg8_topics").select("id,title,explanation").order("order_no");
+  if (error) { app.innerHTML = '<p class="err">Xatolik: ' + esc(error.message) + '</p>'; return; }
+  topics = data;
+  app.innerHTML = `<a href="./" class="muted">‹ Mazoo Academy bosh sahifasi</a><h1>8-sinf algebra</h1>
+    <p class="muted">Mavzuni oʻqing, keyin 15 talik testni yeching.</p>
+    ${topics.map(t => `<div class="card"><button class="topic" onclick="openTopic(${t.id})"><span><b>${t.id}. ${esc(t.title)}</b><span class="muted">Tushuntirish va 15 talik test</span></span><span>›</span></button></div>`).join("")}
+    <div class="card"><b>Yakuniy test</b><p class="muted">Barcha mavzulardan 45 ta savol.</p>
+    <button class="primary" onclick="startFinal()">Yakuniy testni boshlash</button></div>`;
+}
+
+function openTopic(id) {
+  const t = topics.find(x => x.id === id);
+  app.innerHTML = `<button onclick="home()">‹ Orqaga</button>
+    <div class="card md">${marked.parse(t.explanation)}</div>
+    <button class="primary" onclick="startTopic(${id})">15 talik testni boshlash</button>`;
+  window.scrollTo(0, 0);
+}
+
+async function startTopic(id) {
+  const t = topics.find(x => x.id === id);
+  const { data, error } = await sb.rpc("alg8_topic_test", { p_topic_id: id });
+  if (error) return alert(error.message);
+  begin(t.title, data);
+}
+
+async function startFinal() {
+  const { data, error } = await sb.rpc("alg8_final_test");
+  if (error) return alert(error.message);
+  begin("Yakuniy test (45 ta savol)", data);
+}
+
+function begin(title, questions) {
+  quiz = { title, questions, i: 0, score: 0, wrong: [], locked: false };
+  render();
+}
+
+function render() {
+  const q = quiz.questions[quiz.i], n = quiz.questions.length;
+  const opts = ["A", "B", "C", "D"].map(k => `<button class="opt" id="o${k}" onclick="answer('${k}')">${k}) ${esc(q["option_" + k.toLowerCase()])}</button>`).join("");
+  app.innerHTML = `<button onclick="if(confirm('Testni toʻxtatasizmi?')) home()">‹ Chiqish</button>
+    <h1>${esc(quiz.title)}</h1>
+    <div class="muted">Savol ${quiz.i + 1} / ${n}</div>
+    <div class="bar"><i style="width:${(quiz.i / n) * 100}%"></i></div>
+    <div class="card"><b>${esc(q.question)}</b>${opts}<div id="fb"></div></div>`;
+  quiz.locked = false;
+  window.scrollTo(0, 0);
+}
+
+function answer(k) {
+  if (quiz.locked) return;
+  quiz.locked = true;
+  const q = quiz.questions[quiz.i];
+  const ok = k === q.correct;
+  if (ok) quiz.score++; else quiz.wrong.push({ q, picked: k });
+  document.getElementById("o" + q.correct).classList.add("ok");
+  if (!ok) document.getElementById("o" + k).classList.add("bad");
+  const last = quiz.i === quiz.questions.length - 1;
+  document.getElementById("fb").innerHTML =
+    `<div class="note">${ok ? "✅ Toʻgʻri!" : "❌ Notoʻgʻri. Toʻgʻri javob: " + q.correct}${q.explanation ? "<br><span class='muted'>" + esc(q.explanation) + "</span>" : ""}</div>
+     <div class="row"><button class="primary" onclick="next()">${last ? "Natijani koʻrish" : "Keyingisi ›"}</button></div>`;
+}
+
+function next() {
+  if (quiz.i < quiz.questions.length - 1) { quiz.i++; render(); } else result();
+}
+
+function result() {
+  const n = quiz.questions.length, pct = Math.round((quiz.score / n) * 100);
+  const wrong = quiz.wrong.map(w => `<div class="card"><b>${esc(w.q.question)}</b>
+    <div class="muted">Sizning javobingiz: ${w.picked}) ${esc(w.q["option_" + w.picked.toLowerCase()])}</div>
+    <div>Toʻgʻri: ${w.q.correct}) ${esc(w.q["option_" + w.q.correct.toLowerCase()])}</div>
+    ${w.q.explanation ? "<div class='muted'>" + esc(w.q.explanation) + "</div>" : ""}</div>`).join("");
+  app.innerHTML = `<h1>${esc(quiz.title)}</h1>
+    <div class="card"><div class="big">${quiz.score} / ${n}</div><div class="muted">${pct}% toʻgʻri</div>
+    <div class="row"><button class="primary" onclick="home()">Bosh sahifa</button></div></div>
+    ${quiz.wrong.length ? "<h2>Xatolar tahlili</h2>" + wrong : "<p>Barcha javoblar toʻgʻri! 🎉</p>"}`;
+  window.scrollTo(0, 0);
+}
+
+home();
+</script>
+</body>
+</html>
